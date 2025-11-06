@@ -1,0 +1,47 @@
+name: 🚀 Feature
+description: 새로운 기능 구현
+title: "[FEATURE] "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        새로운 기능을 구현하기 위한 이슈입니다.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Description
+      description: 구현할 기능에 대해 간단히 설명해주세요
+      placeholder: |
+        예: Notion CMS에서 블로그 포스트를 불러오는 API 구현
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: ✅ Tasks
+      description: 수행할 작업 목록
+      placeholder: |
+        - [ ] Task 1
+        - [ ] Task 2
+        - [ ] Task 3
+    validations:
+      required: false
+
+  - type: input
+    id: related
+    attributes:
+      label: 🔗 Related Issues
+      description: 관련 이슈나 PR이 있다면 번호를 입력해주세요
+      placeholder: "#123, #456"
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🌿 Branch Convention
+        `feature/BLOG-{issue_number}`

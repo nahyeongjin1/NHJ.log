@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussion
+    url: https://github.com/nahyeongjin1/NHJ.log/discussions
+    about: 질문이나 아이디어가 있다면 Discussion을 이용해주세요
+  - name: 📖 Wiki
+    url: https://github.com/nahyeongjin1/NHJ.log/wiki
+    about: 프로젝트 문서는 Wiki를 참고해주세요

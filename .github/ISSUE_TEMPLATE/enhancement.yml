@@ -1,0 +1,49 @@
+name: ✨ Enhancement
+description: 기존 기능 개선
+title: "[ENHANCE] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        기존 기능을 개선하기 위한 이슈입니다.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Description
+      description: 개선할 내용에 대해 설명해주세요
+      placeholder: |
+        예: React Router v7의 Suspense 경계를 활용하여 로딩 성능 개선
+    validations:
+      required: true
+
+  - type: textarea
+    id: goals
+    attributes:
+      label: 🎯 Goals
+      description: 개선 목표
+      placeholder: |
+        - 초기 로딩 시간 30% 단축
+        - 사용자 경험 향상
+    validations:
+      required: false
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: ✅ Tasks
+      description: 수행할 작업 목록
+      placeholder: |
+        - [ ] Task 1
+        - [ ] Task 2
+        - [ ] Task 3
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🌿 Branch Convention
+        `feature/BLOG-{issue_number}`

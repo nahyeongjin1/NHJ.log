@@ -1,0 +1,52 @@
+name: 📚 Documentation
+description: 문서 작업
+title: "[DOCS] "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        문서 작성 및 업데이트를 위한 이슈입니다.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Description
+      description: 작성/수정할 문서에 대해 설명해주세요
+      placeholder: |
+        예: Notion CMS 연동 가이드 작성
+    validations:
+      required: true
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: 📄 Documentation Type
+      description: 문서 유형
+      options:
+        - README
+        - API 문서
+        - 개발 가이드
+        - 배포 가이드
+        - 기타
+    validations:
+      required: false
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: ✅ Tasks
+      description: 수행할 작업 목록
+      placeholder: |
+        - [ ] 문서 초안 작성
+        - [ ] 코드 예시 추가
+        - [ ] 리뷰 및 수정
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🌿 Branch Convention
+        `feature/BLOG-{issue_number}`
