@@ -1,0 +1,10 @@
+node_modules
+build
+.netlify
+.react-router
+dist
+coverage
+*.lock
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
