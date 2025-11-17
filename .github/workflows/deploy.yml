@@ -1,0 +1,102 @@
+name: Deploy to Netlify
+
+on:
+  # main 브랜치: 프로덕션 배포
+  # develop 브랜치: 미리보기 배포
+  push:
+    branches:
+      - main
+      - develop
+    # 선택적: 특정 경로 변경 시에만 배포 (빌드 횟수 절약)
+    # paths:
+    #   - 'app/**'
+    #   - 'public/**'
+    #   - 'package.json'
+    #   - 'vite.config.ts'
+
+  # 수동 실행 옵션 (Actions 탭에서 직접 실행 가능)
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deploy environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - preview
+
+# 동시 배포 방지 (같은 브랜치에서는 한 번에 하나만)
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Node.js 설정
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm' # npm 캐시 활성화로 빌드 시간 단축
+
+      # 3. 의존성 설치
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. 타입 체크
+      - name: Type check
+        run: npm run typecheck
+
+      # 5. 린트 체크
+      - name: Lint check
+        run: npm run lint
+
+      # 6. 빌드
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      # 7. Netlify에 배포
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: './build/client'
+          production-branch: main
+          production-deploy: ${{ github.ref == 'refs/heads/main' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: |
+            Deploy from GitHub Actions
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.event.head_commit.message }}
+          enable-pull-request-comment: false
+          enable-commit-comment: true
+          enable-commit-status: true
+          overwrites-pull-request-comment: false
+          alias: ${{ github.ref == 'refs/heads/develop' && 'develop-preview' || '' }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 10
+        id: netlify-deploy
+
+      # 8. 배포 결과 알림
+      - name: Deployment Summary
+        if: success()
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "✅ Successfully deployed to Production!"
+            echo "🌐 Production URL: https://hyeongjin.netlify.app"
+          else
+            echo "✅ Successfully deployed to Preview!"
+            echo "🔍 Preview URL: ${{ steps.netlify-deploy.outputs.deploy-url }}"
+          fi
