@@ -1,22 +1,22 @@
-import { netlifyRouterContext } from "@netlify/vite-plugin-react-router";
+import { netlifyRouterContext } from '@netlify/vite-plugin-react-router';
 
-import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import type { Route } from './+types/home';
+import { Welcome } from '../welcome/welcome';
 
-export function meta({ }: Route.MetaArgs) {
+export function meta(_args: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: 'New React Router App' },
+    { name: 'description', content: 'Welcome to React Router!' },
   ];
 }
 
 // Example middleware that adds a custom header
 const customDateHeaderMiddleware: Route.MiddlewareFunction = async (
   _request,
-  next,
+  next
 ) => {
   const response = await next();
-  response.headers.set("X-Current-Date", new Date().toUTCString());
+  response.headers.set('X-Current-Date', new Date().toUTCString());
   return response;
 };
 
@@ -26,9 +26,10 @@ const logMiddleware: Route.MiddlewareFunction = async ({
   context,
 }) => {
   const country =
-    context.get(netlifyRouterContext).geo?.country?.name || "unknown location";
+    context.get(netlifyRouterContext).geo?.country?.name || 'unknown location';
+  // eslint-disable-next-line no-console
   console.log(
-    `Handling ${request.method} request to ${request.url} from ${country}`,
+    `Handling ${request.method} request to ${request.url} from ${country}`
   );
 };
 
