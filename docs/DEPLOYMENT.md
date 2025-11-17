@@ -8,8 +8,10 @@
 
 | 브랜치      | 배포 타입 | URL                                            |
 | ----------- | --------- | ---------------------------------------------- |
-| **main**    | 프로덕션  | https://hyeongjin.netlify.app                  |
+| **main**    | 프로덕션  | https://hyeongjin.me                           |
 | **develop** | 미리보기  | https://develop-preview--hyeongjin.netlify.app |
+
+> 💡 **참고:** 프로덕션은 커스텀 도메인(`hyeongjin.me`)을 사용하며, Netlify 서브도메인(`hyeongjin.netlify.app`)에서도 접근 가능합니다.
 
 - **main 브랜치 푸시**: 프로덕션 배포
 - **develop 브랜치 푸시**: 미리보기 배포
@@ -166,8 +168,9 @@ netlify deploy
 
 ### 배포 상태 확인
 
-- **GitHub**: Repository → Actions 탭
-- **Netlify**: [Deploys 페이지](https://app.netlify.com/sites/hyeongjin/deploys)
+- **프로덕션 사이트**: https://hyeongjin.me
+- **GitHub Actions**: Repository → Actions 탭
+- **Netlify Dashboard**: [Deploys 페이지](https://app.netlify.com/sites/hyeongjin/deploys)
 
 ### 빌드 사용량 확인
 

@@ -95,7 +95,8 @@ jobs:
         run: |
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
             echo "✅ Successfully deployed to Production!"
-            echo "🌐 Production URL: https://hyeongjin.netlify.app"
+            echo "🌐 Production URL: https://hyeongjin.me"
+            echo "📎 Netlify URL: https://hyeongjin.netlify.app"
           else
             echo "✅ Successfully deployed to Preview!"
             echo "🔍 Preview URL: ${{ steps.netlify-deploy.outputs.deploy-url }}"
