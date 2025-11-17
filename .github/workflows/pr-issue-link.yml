@@ -1,0 +1,323 @@
+name: Link PR to Issue
+
+on:
+  pull_request:
+    types: [opened, edited]
+
+jobs:
+  link-issue:
+    name: Auto-link to GitHub Issue
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+      contents: read
+
+    steps:
+      - name: Extract Issue Number from Branch
+        id: extract
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          echo "🔍 Branch: $BRANCH_NAME"
+          echo "🔍 Title: $PR_TITLE"
+
+          # 브랜치 이름에서 이슈 번호 추출
+          # 패턴: feature/BLOG-6, bugfix/BLOG-10, hotfix/BLOG-5
+          if [[ $BRANCH_NAME =~ (feature|bugfix|hotfix)/BLOG-([0-9]+) ]]; then
+            ISSUE_NUM="${BASH_REMATCH[2]}"
+            BRANCH_TYPE="${BASH_REMATCH[1]}"
+            echo "✅ Found issue #$ISSUE_NUM from branch ($BRANCH_TYPE)"
+            echo "issue_number=$ISSUE_NUM" >> $GITHUB_OUTPUT
+            echo "branch_type=$BRANCH_TYPE" >> $GITHUB_OUTPUT
+            echo "found=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # PR 제목에서 추출 (예: "[FEATURE] add feature #6")
+          if [[ $PR_TITLE =~ \#([0-9]+) ]]; then
+            ISSUE_NUM="${BASH_REMATCH[1]}"
+            echo "✅ Found issue #$ISSUE_NUM from title"
+            echo "issue_number=$ISSUE_NUM" >> $GITHUB_OUTPUT
+            echo "found=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # PR 본문에서 추출 (Closes #6, Fixes #6, Resolves #6)
+          if [[ $PR_BODY =~ ([Cc]loses|[Ff]ixes|[Rr]esolves)[[:space:]]\#([0-9]+) ]]; then
+            ISSUE_NUM="${BASH_REMATCH[2]}"
+            echo "✅ Found issue #$ISSUE_NUM from body"
+            echo "issue_number=$ISSUE_NUM" >> $GITHUB_OUTPUT
+            echo "found=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "⚠️ No issue number found"
+          echo "found=false" >> $GITHUB_OUTPUT
+
+      - name: Check if Issue Exists
+        if: steps.extract.outputs.found == 'true'
+        id: check-issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = ${{ steps.extract.outputs.issue_number }};
+            try {
+              const issue = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber
+              });
+
+              console.log(`✅ Issue #${issueNumber} exists`);
+              console.log(`   Title: ${issue.data.title}`);
+              console.log(`   State: ${issue.data.state}`);
+              console.log(`   Labels: ${issue.data.labels.map(l => l.name).join(', ')}`);
+
+              core.setOutput('exists', 'true');
+              core.setOutput('issue_title', issue.data.title);
+              core.setOutput('issue_state', issue.data.state);
+
+              return true;
+            } catch (error) {
+              console.log(`❌ Issue #${issueNumber} not found`);
+              core.setOutput('exists', 'false');
+              return false;
+            }
+
+      - name: Update PR Title with Issue Number
+        if: steps.extract.outputs.found == 'true' && steps.check-issue.outputs.exists == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = ${{ steps.extract.outputs.issue_number }};
+            const issueTitle = `${{ steps.check-issue.outputs.issue_title }}`;
+            const currentPrTitle = context.payload.pull_request.title;
+
+            // 이미 [BLOG-N] 형식이 있는지 확인
+            const hasIssuePrefixPattern = /^\[BLOG-\d+\]/;
+
+            if (hasIssuePrefixPattern.test(currentPrTitle)) {
+              console.log('✅ PR title already has issue number prefix');
+              return;
+            }
+
+            // Issue 제목에서 [FEATURE], [BUG] 같은 prefix 제거
+            const cleanIssueTitle = issueTitle.replace(/^\[(FEATURE|BUG|DOCS|REFACTOR|CHORE)\]\s*/i, '');
+
+            // 새 PR 제목 생성: [BLOG-6] Issue 제목
+            const newPrTitle = `[BLOG-${issueNumber}] ${cleanIssueTitle}`;
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              title: newPrTitle
+            });
+
+            console.log(`✅ Updated PR title to: ${newPrTitle}`);
+
+      - name: Update PR Description with Issue Link
+        if: steps.extract.outputs.found == 'true' && steps.check-issue.outputs.exists == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = ${{ steps.extract.outputs.issue_number }};
+            const issueTitle = `${{ steps.check-issue.outputs.issue_title }}`;
+            const prBody = context.payload.pull_request.body || '';
+
+            // 이미 실제 이슈 번호가 링크되어 있는지 확인
+            const hasValidIssueLink = /([Cc]loses|[Ff]ixes|[Rr]esolves)\s*#\d+/.test(prBody);
+
+            if (hasValidIssueLink) {
+              console.log('✅ Issue link already exists in PR body');
+              return;
+            }
+
+            // HTML 주석 제거한 버전으로 패턴 체크 (주석 내부 텍스트는 무시)
+            const prBodyWithoutComments = prBody.replace(/<!--[\s\S]*?-->/g, '');
+
+            // "Closes #" 패턴 찾기 (템플릿에 있는 빈 상태)
+            // 패턴: "Closes #" 뒤에 숫자가 없는 경우
+            const emptyClosesPattern = /Closes\s*#\s*(?!\d)/;
+
+            let newBody;
+
+            if (emptyClosesPattern.test(prBodyWithoutComments)) {
+              // "Closes #" 를 "Closes #N"으로 교체 (원본에서 교체, 첫 번째만)
+              let replaced = false;
+              newBody = prBody.replace(/Closes\s*#(?!\d)/, (match) => {
+                if (!replaced) {
+                  replaced = true;
+                  return `Closes #${issueNumber}\n\n> ${issueTitle}`;
+                }
+                return match;
+              });
+              console.log(`✅ Updated "Closes #" to "Closes #${issueNumber}"`);
+            } else {
+              // PR 본문에 이슈 링크 섹션 추가
+              const issueLinkSection = `
+              ## 🔗 Related Issue
+
+              <!-- ⚠️ 아래 내용은 자동으로 채워집니다. 수정하지 마세요 -->
+
+              Closes #${issueNumber}
+
+              > ${issueTitle}
+              `.trim();
+
+              newBody = prBody ? `${prBody}\n\n${issueLinkSection}` : issueLinkSection;
+              console.log(`✅ Added new "Related Issue" section`);
+            }
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              body: newBody
+            });
+
+            console.log(`✅ Updated PR description with issue #${issueNumber}`);
+
+      - name: Update Branch Info in PR Body
+        if: steps.extract.outputs.found == 'true' && steps.check-issue.outputs.exists == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // 최신 PR body를 다시 가져오기 (이전 단계에서 업데이트된 내용 반영)
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            });
+
+            const prBody = pr.data.body || '';
+            const sourceBranch = context.payload.pull_request.head.ref;
+            const targetBranch = context.payload.pull_request.base.ref;
+
+            // Branch 섹션 패턴 찾기 (주석 포함)
+            const branchSectionPattern = /## 🌿 Branch\s*\n(?:<!--.*?-->\s*\n)*\s*-\s*From:.*\n\s*-\s*To:.*/s;
+
+            const newBranchSection = `## 🌿 Branch
+
+            <!-- ⚠️ 아래 내용은 자동으로 채워집니다. 수정하지 마세요 -->
+
+            - From: \`${sourceBranch}\`
+            - To: \`${targetBranch}\``.replace(/^            /gm, '');
+
+            if (branchSectionPattern.test(prBody)) {
+              const newBody = prBody.replace(branchSectionPattern, newBranchSection);
+
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                body: newBody
+              });
+
+              console.log(`✅ Updated branch info: ${sourceBranch} → ${targetBranch}`);
+            } else {
+              console.log('⚠️ Branch section pattern not found in PR body');
+              console.log('PR body:', prBody);
+            }
+
+      - name: Comment on Issue with PR Link
+        if: steps.extract.outputs.found == 'true' && steps.check-issue.outputs.exists == 'true' && github.event.action == 'opened'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = ${{ steps.extract.outputs.issue_number }};
+            const prNumber = context.payload.pull_request.number;
+            const prTitle = context.payload.pull_request.title;
+            const prUrl = context.payload.pull_request.html_url;
+            const prAuthor = context.payload.pull_request.user.login;
+            const branchType = '${{ steps.extract.outputs.branch_type }}' || 'unknown';
+
+            const branchTypeEmoji = {
+              'feature': '🚀',
+              'bugfix': '🐛',
+              'hotfix': '🔥'
+            };
+
+            const commentBody = `
+            ${branchTypeEmoji[branchType] || '🔗'} **Linked Pull Request**
+
+            **#${prNumber}** ${prTitle}
+            👤 Author: @${prAuthor}
+            🔗 [View Pull Request](${prUrl})
+            `.trim();
+
+            // 새 댓글 생성 (opened일 때만 실행되므로 중복 체크 불필요)
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: commentBody
+            });
+            console.log(`✅ Added PR link comment to issue #${issueNumber}`);
+
+      - name: Validate Branch Convention
+        if: steps.extract.outputs.found == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branchName = '${{ github.head_ref }}';
+
+            console.log('⚠️ No issue number found in branch name, PR title, or body');
+            console.log('');
+            console.log('📌 Expected branch naming conventions:');
+            console.log('   - feature/BLOG-{issue_number}');
+            console.log('   - bugfix/BLOG-{issue_number}');
+            console.log('   - hotfix/BLOG-{issue_number}');
+            console.log('');
+            console.log(`Current branch: ${branchName}`);
+            console.log('');
+            console.log('💡 Tip: Include issue number in branch name or PR description');
+            console.log('   Example: "Closes #123" in PR body');
+
+            // PR에 경고 댓글 추가
+            const warningComment = `
+            ## ⚠️ Issue Link Not Found
+
+            This PR does not seem to be linked to any GitHub issue.
+
+            ### 📌 Recommended Actions:
+            1. Follow branch naming convention:
+               - \`feature/BLOG-{issue_number}\`
+               - \`bugfix/BLOG-{issue_number}\`
+               - \`hotfix/BLOG-{issue_number}\`
+
+            2. Or add to PR description:
+               - \`Closes #123\`
+               - \`Fixes #123\`
+               - \`Resolves #123\`
+
+            3. Create a related issue if one doesn't exist
+
+            ---
+            Current branch: \`${branchName}\`
+            `.trim();
+
+            // 기존 경고 댓글 확인
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number
+            });
+
+            const existingWarning = comments.data.find(comment =>
+              comment.body.includes('Issue Link Not Found') &&
+              comment.user.login === 'github-actions[bot]'
+            );
+
+            if (!existingWarning) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: warningComment
+              });
+              console.log('✅ Added warning comment to PR');
+            }
