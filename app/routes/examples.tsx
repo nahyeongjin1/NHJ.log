@@ -1,0 +1,57 @@
+import { Link } from 'react-router';
+import { netlifyRouterContext } from '@netlify/vite-plugin-react-router';
+
+import type { Route } from './+types/home';
+import { Welcome } from '../welcome/welcome';
+
+export function meta(_args: Route.MetaArgs) {
+  return [
+    { title: 'New React Router App' },
+    { name: 'description', content: 'Welcome to React Router!' },
+  ];
+}
+
+// Example middleware that adds a custom header
+const customDateHeaderMiddleware: Route.MiddlewareFunction = async (
+  _request,
+  next
+) => {
+  const response = await next();
+  response.headers.set('X-Current-Date', new Date().toUTCString());
+  return response;
+};
+
+// Example middleware that uses Netlify context
+const logMiddleware: Route.MiddlewareFunction = async ({
+  request,
+  context,
+}) => {
+  const country =
+    context.get(netlifyRouterContext).geo?.country?.name || 'unknown location';
+  // eslint-disable-next-line no-console
+  console.log(
+    `Handling ${request.method} request to ${request.url} from ${country}`
+  );
+};
+
+export const middleware: Route.MiddlewareFunction[] = [
+  customDateHeaderMiddleware,
+  logMiddleware,
+];
+
+export default function Home() {
+  return (
+    <div>
+      <Welcome />
+      {/* Design System Test Link */}
+      <div className="fixed bottom-8 right-8">
+        <Link
+          to="/design-test"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[var(--text-primary)] text-[var(--bg-primary)] label shadow-lg hover:scale-105 transition-transform"
+        >
+          🎨 Design System Test
+        </Link>
+      </div>
+    </div>
+  );
+}
