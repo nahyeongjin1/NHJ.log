@@ -10,6 +10,8 @@ import type React from 'react';
 
 import type { Route } from './+types/root';
 import stylesheet from './app.css?url';
+import { Header } from './components/Header';
+import { Footer } from './components/Footer';
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://cdn.jsdelivr.net' },
@@ -39,7 +41,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <>
+      <Header />
+      <main>
+        <Outlet />
+      </main>
+      <Footer />
+    </>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
