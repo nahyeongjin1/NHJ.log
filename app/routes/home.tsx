@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { netlifyRouterContext } from '@netlify/vite-plugin-react-router';
 
 import type { Route } from './+types/home';
@@ -39,5 +40,18 @@ export const middleware: Route.MiddlewareFunction[] = [
 ];
 
 export default function Home() {
-  return <Welcome />;
+  return (
+    <div>
+      <Welcome />
+      {/* Design System Test Link */}
+      <div className="fixed bottom-8 right-8">
+        <Link
+          to="/design-test"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[var(--text-primary)] text-[var(--bg-primary)] label shadow-lg hover:scale-105 transition-transform"
+        >
+          🎨 Design System Test
+        </Link>
+      </div>
+    </div>
+  );
 }
