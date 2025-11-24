@@ -66,38 +66,19 @@ jobs:
         env:
           NODE_ENV: production
 
-      # 7. Netlify에 배포
+      # 7. Netlify CLI 설치
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
+      # 8. Netlify에 배포
       - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3.0
-        with:
-          publish-dir: './build/client'
-          production-branch: main
-          production-deploy: ${{ github.ref == 'refs/heads/main' }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: |
-            Deploy from GitHub Actions
-            Branch: ${{ github.ref_name }}
-            Commit: ${{ github.event.head_commit.message }}
-          enable-pull-request-comment: false
-          enable-commit-comment: true
-          enable-commit-status: true
-          overwrites-pull-request-comment: false
-          alias: ${{ github.ref == 'refs/heads/develop' && 'develop-preview' || '' }}
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            netlify deploy --prod --message "Deploy from GitHub Actions: ${{ github.event.head_commit.message }}"
+          else
+            netlify deploy --alias develop-preview --message "Deploy from GitHub Actions: ${{ github.event.head_commit.message }}"
+          fi
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         timeout-minutes: 10
-        id: netlify-deploy
-
-      # 8. 배포 결과 알림
-      - name: Deployment Summary
-        if: success()
-        run: |
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "✅ Successfully deployed to Production!"
-            echo "🌐 Production URL: https://hyeongjin.me"
-            echo "📎 Netlify URL: https://hyeongjin.netlify.app"
-          else
-            echo "✅ Successfully deployed to Preview!"
-            echo "🔍 Preview URL: ${{ steps.netlify-deploy.outputs.deploy-url }}"
-          fi
