@@ -4,4 +4,5 @@ export default [
   index('routes/home.tsx'),
   route('design-test', 'routes/design-test.tsx'),
   route('examples', 'routes/examples.tsx'),
+  route('action/set-theme', 'routes/action/set-theme.ts'),
 ] satisfies RouteConfig;

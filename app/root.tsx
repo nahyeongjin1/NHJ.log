@@ -5,13 +5,20 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from 'react-router';
 import type React from 'react';
+import {
+  ThemeProvider,
+  useTheme,
+  PreventFlashOnWrongTheme,
+} from 'remix-themes';
 
 import type { Route } from './+types/root';
 import stylesheet from './app.css?url';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { themeSessionResolver } from './sessions.server';
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://cdn.jsdelivr.net' },
@@ -22,13 +29,26 @@ export const links: Route.LinksFunction = () => [
   { rel: 'stylesheet', href: stylesheet },
 ];
 
-export function Layout({ children }: { children: React.ReactNode }) {
+// 쿠키에서 테마를 읽어서 SSR 시 적용
+export const loader = async ({ request }: Route.LoaderArgs) => {
+  const { getTheme } = await themeSessionResolver(request);
+  return {
+    theme: getTheme(),
+  };
+};
+
+// InnerLayout: useTheme 훅을 사용하여 테마 적용
+const InnerLayout = ({ children }: { children: React.ReactNode }) => {
+  const data = useLoaderData<typeof loader>();
+  const [theme] = useTheme();
+
   return (
-    <html lang="en">
+    <html lang="en" className={theme ?? ''}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
+        <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} />
         <Links />
       </head>
       <body>
@@ -38,7 +58,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </body>
     </html>
   );
-}
+};
+
+// Layout: ThemeProvider로 InnerLayout을 감싸서 테마 컨텍스트 제공
+export const Layout = ({ children }: { children: React.ReactNode }) => {
+  const data = useLoaderData<typeof loader>();
+
+  return (
+    <ThemeProvider specifiedTheme={data.theme} themeAction="/action/set-theme">
+      <InnerLayout>{children}</InnerLayout>
+    </ThemeProvider>
+  );
+};
 
 export default function App() {
   return (
