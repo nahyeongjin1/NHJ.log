@@ -1,27 +1,14 @@
 import { Link } from 'react-router';
-import { useState } from 'react';
+import { useTheme, Theme } from 'remix-themes';
 import { siteConfig } from '~/config/site';
 
 export function Header() {
-  // 다크모드 초기 상태 (클라이언트에서만 실행)
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof document !== 'undefined') {
-      return document.documentElement.classList.contains('dark');
-    }
-    return false;
-  });
+  // remix-themes의 useTheme 훅 사용
+  const [theme, setTheme] = useTheme();
+  const isDark = theme === Theme.DARK;
 
   const toggleDarkMode = () => {
-    const newMode = !isDark;
-    setIsDark(newMode);
-
-    if (newMode) {
-      document.documentElement.classList.remove('light');
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    }
+    setTheme(isDark ? Theme.LIGHT : Theme.DARK);
   };
 
   return (

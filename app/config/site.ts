@@ -3,7 +3,7 @@ export const siteConfig = {
   // 기본 정보
   name: 'NHJ.log',
   description:
-    '디자인 시스템, 웹 개발, 그리고 의미 있는 디지털 경험을 만드는 것에 대한 생각과 인사이트를 공유합니다.',
+    '문제 해결에 경계를 두지 않고, 해결이 될 때까지 파고들었던 경험을 공유합니다.',
   url: 'https://hyeongjin.me',
   author: {
     name: 'Hyeongjin Na',
