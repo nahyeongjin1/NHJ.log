@@ -24,6 +24,7 @@ export default {
         ],
       },
       colors: {
+        // Primitives
         gray: {
           0: '#ffffff',
           50: '#fafafa',
@@ -39,6 +40,39 @@ export default {
           950: '#0a0a0a',
           1000: '#000000',
         },
+        // Semantic Tokens (CSS Variables)
+        primary: 'var(--bg-primary)',
+        secondary: 'var(--bg-secondary)',
+        tertiary: 'var(--bg-tertiary)',
+        hover: 'var(--bg-hover)',
+      },
+      textColor: {
+        primary: 'var(--text-primary)',
+        secondary: 'var(--text-secondary)',
+        tertiary: 'var(--text-tertiary)',
+        muted: 'var(--text-muted)',
+      },
+      backgroundColor: {
+        primary: 'var(--bg-primary)',
+        secondary: 'var(--bg-secondary)',
+        tertiary: 'var(--bg-tertiary)',
+        hover: 'var(--bg-hover)',
+      },
+      borderColor: {
+        default: 'var(--border-default)',
+        subtle: 'var(--border-subtle)',
+        strong: 'var(--border-strong)',
+      },
+      fontSize: {
+        'heading-1': ['36px', { lineHeight: '44px', fontWeight: '600' }],
+        'heading-2': ['30px', { lineHeight: '38px', fontWeight: '600' }],
+        'heading-3': ['24px', { lineHeight: '32px', fontWeight: '600' }],
+        'body-large': ['20px', { lineHeight: '32px', fontWeight: '400' }],
+        body: ['16px', { lineHeight: '24px', fontWeight: '400' }],
+        'body-small': ['14px', { lineHeight: '20px', fontWeight: '400' }],
+        label: ['16px', { lineHeight: '24px', fontWeight: '500' }],
+        'label-small': ['14px', { lineHeight: '20px', fontWeight: '400' }],
+        caption: ['12px', { lineHeight: '16px', fontWeight: '400' }],
       },
     },
   },
