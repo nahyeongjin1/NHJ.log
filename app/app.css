@@ -2,11 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body {
-  @apply bg-white dark:bg-gray-950;
+@layer base {
+  /* Light Mode Colors (default) */
+  :root,
+  :root.light {
+    --bg-primary: theme('colors.gray.100');
+    --bg-secondary: theme('colors.gray.200');
+    --bg-tertiary: theme('colors.gray.300');
+    --bg-hover: theme('colors.gray.200');
 
+    --text-primary: theme('colors.gray.800');
+    --text-secondary: theme('colors.gray.600');
+    --text-tertiary: theme('colors.gray.500');
+    --text-muted: theme('colors.gray.400');
+
+    --border-default: theme('colors.gray.200');
+    --border-subtle: theme('colors.gray.100');
+    --border-strong: theme('colors.gray.300');
+  }
+
+  /* Dark Mode Colors */
+  :root.dark {
+    --bg-primary: theme('colors.gray.900');
+    --bg-secondary: theme('colors.gray.800');
+    --bg-tertiary: theme('colors.gray.700');
+    --bg-hover: theme('colors.gray.800');
+
+    --text-primary: theme('colors.gray.200');
+    --text-secondary: theme('colors.gray.400');
+    --text-tertiary: theme('colors.gray.500');
+    --text-muted: theme('colors.gray.600');
+
+    --border-default: theme('colors.gray.800');
+    --border-subtle: theme('colors.gray.900');
+    --border-strong: theme('colors.gray.700');
+  }
+
+  /* Auto dark mode based on system preference (only if no explicit class) */
   @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
+    :root:not(.light):not(.dark) {
+      --bg-primary: theme('colors.gray.900');
+      --bg-secondary: theme('colors.gray.800');
+      --bg-tertiary: theme('colors.gray.700');
+      --bg-hover: theme('colors.gray.800');
+
+      --text-primary: theme('colors.gray.200');
+      --text-secondary: theme('colors.gray.400');
+      --text-tertiary: theme('colors.gray.500');
+      --text-muted: theme('colors.gray.600');
+
+      --border-default: theme('colors.gray.800');
+      --border-subtle: theme('colors.gray.900');
+      --border-strong: theme('colors.gray.700');
+    }
+  }
+
+  html,
+  body {
+    @apply bg-[var(--bg-primary)] text-[var(--text-primary)];
+  }
+
+  /* Typography Utilities */
+  .heading-1 {
+    @apply font-semibold text-4xl leading-[44px];
+  }
+
+  .heading-2 {
+    @apply font-semibold text-3xl leading-[38px];
+  }
+
+  .heading-3 {
+    @apply font-semibold text-2xl leading-8;
+  }
+
+  .body-large {
+    @apply font-normal text-xl leading-8;
+  }
+
+  .body {
+    @apply font-normal text-base leading-6;
+  }
+
+  .body-small {
+    @apply font-normal text-sm leading-5;
+  }
+
+  .label {
+    @apply font-medium text-base leading-6;
+  }
+
+  .label-small {
+    @apply font-normal text-sm leading-5;
+  }
+
+  .caption {
+    @apply font-normal text-xs leading-4;
   }
 }
