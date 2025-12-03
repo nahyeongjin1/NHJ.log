@@ -1,10 +1,44 @@
 export interface Post {
   id: string;
   title: string;
+  slug: string;
   excerpt: string;
-  content?: string; // 나중에 상세 페이지에서 사용
-  date: string; // ISO 8601 format (YYYY-MM-DD)
   tags: string[];
-  slug: string; // URL-friendly identifier
+  thumbnail?: string;
   published: boolean;
+  createdAt: string; // ISO 8601 format
+  updatedAt: string; // ISO 8601 format
+  relatedProject?: string; // Project ID (Relation)
+}
+
+export interface Project {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  period?: {
+    start: string;
+    end?: string;
+  };
+  status?: 'in-progress' | 'completed' | 'maintenance';
+  techStack: string[];
+  github?: string;
+  demo?: string;
+  thumbnail?: string;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+  relatedPosts?: string[]; // Post IDs (Relation)
+}
+
+export interface Bookmark {
+  id: string;
+  title: string;
+  url: string;
+  category?: string;
+  tags: string[];
+  description?: string;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
