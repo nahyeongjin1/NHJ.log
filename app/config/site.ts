@@ -39,4 +39,12 @@ export const siteConfig = {
   footer: {
     copyright: '© 2025 Blog. All rights reserved.',
   },
+
+  // 페이지별 설정
+  pages: {
+    blog: {
+      title: 'Blog',
+      description: '개발 중 마주친 문제들과 해결 과정을 기록합니다.',
+    },
+  },
 } as const;
