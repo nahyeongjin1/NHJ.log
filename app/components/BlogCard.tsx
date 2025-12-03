@@ -7,9 +7,11 @@ interface BlogCardProps {
 }
 
 export function BlogCard({ post, thumbnailUrl }: BlogCardProps) {
-  // 날짜 포맷팅 (YYYY-MM-DD → YYYY.MM.DD)
-  // TODO: 노션 API 연동 후 형식 재확인 필요
-  const formattedDate = post.date.replace(/-/g, '.');
+  // 날짜 포맷팅 (ISO 8601 → YYYY.MM.DD)
+  const formattedDate = new Date(post.createdAt)
+    .toISOString()
+    .slice(0, 10)
+    .replace(/-/g, '.');
 
   // 읽기 시간 추정 (간단히 5분으로 고정)
   // TODO: content 기반으로 계산
