@@ -1,7 +1,7 @@
 name: 🚀 Feature
 description: 새로운 기능 구현
-title: "[FEATURE] "
-labels: ["feature"]
+title: '[FEATURE] '
+labels: ['feature']
 body:
   - type: markdown
     attributes:
@@ -30,12 +30,14 @@ body:
     validations:
       required: false
 
-  - type: input
+  - type: textarea
     id: related
     attributes:
       label: 🔗 Related Issues
       description: 관련 이슈나 PR이 있다면 번호를 입력해주세요
-      placeholder: "#123, #456"
+      placeholder: |
+        - #123
+        - #456
     validations:
       required: false
 
