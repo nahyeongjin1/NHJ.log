@@ -1,14 +1,14 @@
 import { data, isRouteErrorResponse } from 'react-router';
 import { Search } from 'lucide-react';
-import type { Route } from './+types/blog';
-import { BlogCard } from '~/components/BlogCard';
+import type { Route } from './+types/posts';
+import { PostCard } from '~/components/PostCard';
 import { getPosts } from '~/lib/notion.server';
 import { siteConfig } from '~/config/site';
 
 export function meta(_args: Route.MetaArgs) {
   return [
-    { title: `${siteConfig.pages.blog.title} - ${siteConfig.name}` },
-    { name: 'description', content: siteConfig.pages.blog.description },
+    { title: `${siteConfig.pages.posts.title} - ${siteConfig.name}` },
+    { name: 'description', content: siteConfig.pages.posts.description },
   ];
 }
 
@@ -17,7 +17,7 @@ export async function loader() {
   return data({ posts });
 }
 
-export default function BlogPage({ loaderData }: Route.ComponentProps) {
+export default function PostsPage({ loaderData }: Route.ComponentProps) {
   const { posts } = loaderData;
 
   return (
@@ -26,10 +26,10 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
       <section className="max-w-[1260px] mx-auto px-10 pt-[72px]">
         <div className="flex flex-col gap-6">
           <h1 className="text-heading-2 text-primary">
-            {siteConfig.pages.blog.title}
+            {siteConfig.pages.posts.title}
           </h1>
           <p className="text-body text-secondary">
-            {siteConfig.pages.blog.description}
+            {siteConfig.pages.posts.description}
           </p>
 
           {/* 검색바 */}
@@ -53,7 +53,7 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
             <div className="flex flex-wrap justify-center gap-6">
               {posts.map((post) => (
                 <div key={post.id} className="w-[371px]">
-                  <BlogCard post={post} thumbnailUrl={post.thumbnail} />
+                  <PostCard post={post} thumbnailUrl={post.thumbnail} />
                 </div>
               ))}
             </div>
@@ -87,7 +87,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         <h1 className="text-heading-2 text-primary mb-4">{message}</h1>
         <p className="text-body text-secondary mb-8">{details}</p>
         <a
-          href="/blog"
+          href="/posts"
           className="inline-block px-6 py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg text-label hover:opacity-90 transition-opacity"
         >
           다시 시도

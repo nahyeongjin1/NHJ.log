@@ -1,7 +1,7 @@
 import { netlifyRouterContext } from '@netlify/vite-plugin-react-router';
 import type { Route } from './+types/home';
 import { SectionHeader } from '~/components/SectionHeader';
-import { BlogCard } from '~/components/BlogCard';
+import { PostCard } from '~/components/PostCard';
 import { getPublishedPosts } from '~/data/mock-posts';
 import { siteConfig } from '~/config/site';
 
@@ -71,7 +71,7 @@ export default function Home() {
 
           <div className="grid grid-cols-3 gap-6 mt-12">
             {featuredPosts.map((post) => (
-              <BlogCard key={post.id} post={post} />
+              <PostCard key={post.id} post={post} />
             ))}
           </div>
         </div>
