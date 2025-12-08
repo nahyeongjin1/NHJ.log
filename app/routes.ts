@@ -4,6 +4,7 @@ export default [
   index('routes/home.tsx'),
   route('posts', 'routes/posts.tsx'),
   route('projects', 'routes/projects.tsx'),
+  route('about', 'routes/about.tsx'),
   route('design-test', 'routes/design-test.tsx'),
   route('examples', 'routes/examples.tsx'),
   route('action/set-theme', 'routes/action/set-theme.ts'),
