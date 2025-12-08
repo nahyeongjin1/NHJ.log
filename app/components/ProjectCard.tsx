@@ -2,15 +2,12 @@ import { Link } from 'react-router';
 import { Image, ArrowUpRight, FileText } from 'lucide-react';
 import type { Project, Post } from '~/types/post';
 
-interface PortfolioCardProps {
+interface ProjectCardProps {
   project: Project;
   relatedPosts?: Post[]; // relatedPosts ID로 매칭된 Post 목록
 }
 
-export function PortfolioCard({
-  project,
-  relatedPosts = [],
-}: PortfolioCardProps) {
+export function ProjectCard({ project, relatedPosts = [] }: ProjectCardProps) {
   // 기간 포맷팅 (2024-06 → 2024.06)
   const formatPeriod = (period?: { start: string; end?: string }) => {
     if (!period) return '';

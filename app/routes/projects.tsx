@@ -1,16 +1,13 @@
 import { data, isRouteErrorResponse } from 'react-router';
-import type { Route } from './+types/portfolio';
-import { PortfolioCard } from '~/components/PortfolioCard';
+import type { Route } from './+types/projects';
+import { ProjectCard } from '~/components/ProjectCard';
 import { getProjects, getPosts } from '~/lib/notion.server';
 import { siteConfig } from '~/config/site';
 
 export function meta(_args: Route.MetaArgs) {
   return [
-    { title: `Portfolio - ${siteConfig.name}` },
-    {
-      name: 'description',
-      content: '참여했던 프로젝트들과 그 과정에서의 경험을 정리했습니다.',
-    },
+    { title: `${siteConfig.pages.projects.title} - ${siteConfig.name}` },
+    { name: 'description', content: siteConfig.pages.projects.description },
   ];
 }
 
@@ -28,7 +25,7 @@ export async function loader() {
   return data({ projectsWithPosts });
 }
 
-export default function PortfolioPage({ loaderData }: Route.ComponentProps) {
+export default function ProjectsPage({ loaderData }: Route.ComponentProps) {
   const { projectsWithPosts } = loaderData;
 
   return (
@@ -36,9 +33,11 @@ export default function PortfolioPage({ loaderData }: Route.ComponentProps) {
       {/* 타이틀 섹션 */}
       <section className="max-w-[1260px] mx-auto px-10 pt-[72px]">
         <div className="flex flex-col gap-6">
-          <h1 className="text-heading-2 text-primary">Portfolio</h1>
+          <h1 className="text-heading-2 text-primary">
+            {siteConfig.pages.projects.title}
+          </h1>
           <p className="text-body text-secondary">
-            참여했던 프로젝트들과 그 과정에서의 경험을 정리했습니다.
+            {siteConfig.pages.projects.description}
           </p>
         </div>
       </section>
@@ -50,10 +49,7 @@ export default function PortfolioPage({ loaderData }: Route.ComponentProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
               {projectsWithPosts.map(({ project, relatedPosts }) => (
                 <div key={project.id} className="w-full max-w-[550px]">
-                  <PortfolioCard
-                    project={project}
-                    relatedPosts={relatedPosts}
-                  />
+                  <ProjectCard project={project} relatedPosts={relatedPosts} />
                 </div>
               ))}
             </div>
