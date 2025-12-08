@@ -50,5 +50,65 @@ export const siteConfig = {
       title: 'Projects',
       description: '참여했던 프로젝트들과 그 과정에서의 경험을 정리했습니다.',
     },
+    about: {
+      title: 'About',
+      description: '소개, 활동, 기술 스택 등을 확인할 수 있습니다.',
+      headline: '문제 앞에서 분야를 가리지 않는 백엔드 개발자입니다.',
+      location: 'Seoul, South Korea',
+      intro: [
+        'TypeScript와 Node.js를 주력으로 백엔드 개발을 하고 있습니다.',
+        '하지만 문제 해결이 필요하다면 프론트엔드든 인프라든 가리지 않고 뛰어듭니다.',
+        '특정 언어나 프레임워크에 종속되기보다, 상황에 맞는 도구를 선택하고 깊이 파고들어 해결책을 찾는 과정을 즐깁니다.',
+        '이 블로그에는 개발하면서 마주친 문제들과 그 해결 과정을 기록하고 있습니다.',
+      ],
+      activities: [
+        {
+          title: 'GDGoC Member',
+          organization: 'Google Developer Groups on Campus',
+          period: '2025 - 2026',
+          description: 'GDGoC Konkuk 25-26 멤버로 활동',
+        },
+        {
+          title: '공과대학 학생회',
+          organization: '건국대학교',
+          period: '2021',
+          description: '공과대학 학생회 활동',
+        },
+        {
+          title: '오픈소스 기여',
+          organization: 'GitHub',
+          period: '',
+          description:
+            'gemini-cli, claude-code 등 오픈소스 프로젝트에 이슈 생성 및 기여',
+        },
+      ],
+      education: {
+        degree: '컴퓨터공학부',
+        school: '건국대학교',
+        period: '2020.03 - 2026.08',
+      },
+      skills: {
+        Languages: ['TypeScript', 'JavaScript', 'Python', 'C++'],
+        Backend: ['Node.js', 'Fastify', 'Express', 'FastAPI'],
+        Frontend: ['React', 'React Router v7', 'Next.js', 'Tailwind CSS'],
+        Database: ['PostgreSQL', 'MongoDB', 'Redis'],
+        'Infra / DevOps': ['Docker', 'AWS', 'GitHub Actions', 'K3S'],
+        Tools: ['Git', 'Notion', 'Jira'],
+      },
+      interests: [
+        {
+          title: '시스템 아키텍처',
+          description: '확장 가능하고 유지보수하기 좋은 시스템 설계',
+        },
+        {
+          title: '성능 최적화',
+          description: '병목 지점을 찾아 개선하는 과정',
+        },
+        {
+          title: '트러블슈팅',
+          description: '문제의 근본 원인을 파고들어 해결하기',
+        },
+      ],
+    },
   },
 } as const;
