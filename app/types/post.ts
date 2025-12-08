@@ -20,6 +20,7 @@ export interface Project {
     start: string;
     end?: string;
   };
+  roles: string[]; // Frontend, Backend, Infra 등
   status?: 'in-progress' | 'completed' | 'maintenance';
   techStack: string[];
   github?: string;

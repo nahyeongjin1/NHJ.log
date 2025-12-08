@@ -178,6 +178,7 @@ function parseProject(page: PageObjectResponse): Project {
     slug: getTextProperty(page, 'slug'),
     description: getTextProperty(page, 'description'),
     period: getDateProperty(page, 'period'),
+    roles: getMultiSelectProperty(page, 'role'),
     status,
     techStack: getMultiSelectProperty(page, 'techStack'),
     github: getUrlProperty(page, 'github'),
