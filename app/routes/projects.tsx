@@ -1,24 +1,32 @@
 import { data, isRouteErrorResponse } from 'react-router';
-import { Search } from 'lucide-react';
-import type { Route } from './+types/blog';
-import { BlogCard } from '~/components/BlogCard';
-import { getPosts } from '~/lib/notion.server';
+import type { Route } from './+types/projects';
+import { ProjectCard } from '~/components/ProjectCard';
+import { getProjects, getPosts } from '~/lib/notion.server';
 import { siteConfig } from '~/config/site';
 
 export function meta(_args: Route.MetaArgs) {
   return [
-    { title: `${siteConfig.pages.blog.title} - ${siteConfig.name}` },
-    { name: 'description', content: siteConfig.pages.blog.description },
+    { title: `${siteConfig.pages.projects.title} - ${siteConfig.name}` },
+    { name: 'description', content: siteConfig.pages.projects.description },
   ];
 }
 
 export async function loader() {
-  const posts = await getPosts();
-  return data({ posts });
+  const [projects, posts] = await Promise.all([getProjects(), getPosts()]);
+
+  // relatedPosts ID로 Post 객체 매핑
+  const projectsWithPosts = projects.map((project) => {
+    const relatedPosts = (project.relatedPosts || [])
+      .map((postId) => posts.find((post) => post.id === postId))
+      .filter((post): post is NonNullable<typeof post> => post !== undefined);
+    return { project, relatedPosts };
+  });
+
+  return data({ projectsWithPosts });
 }
 
-export default function BlogPage({ loaderData }: Route.ComponentProps) {
-  const { posts } = loaderData;
+export default function ProjectsPage({ loaderData }: Route.ComponentProps) {
+  const { projectsWithPosts } = loaderData;
 
   return (
     <div className="bg-primary min-h-screen">
@@ -26,41 +34,29 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
       <section className="max-w-[1260px] mx-auto px-10 pt-[72px]">
         <div className="flex flex-col gap-6">
           <h1 className="text-heading-2 text-primary">
-            {siteConfig.pages.blog.title}
+            {siteConfig.pages.projects.title}
           </h1>
           <p className="text-body text-secondary">
-            {siteConfig.pages.blog.description}
+            {siteConfig.pages.projects.description}
           </p>
-
-          {/* 검색바 */}
-          <div className="relative w-full max-w-[448px]">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary">
-              <Search size={20} />
-            </div>
-            <input
-              type="text"
-              placeholder="제목, 내용, 카테고리로 검색..."
-              className="w-full h-10 pl-10 pr-4 bg-tertiary border border-subtle rounded-lg text-label text-primary placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors"
-            />
-          </div>
         </div>
       </section>
 
-      {/* 블로그 카드 그리드 */}
-      <section className="border-t border-strong mt-[72px]">
+      {/* 포트폴리오 카드 그리드 */}
+      <section className="mt-12 border-t border-strong">
         <div className="max-w-[1260px] mx-auto px-12 py-12">
-          {posts.length > 0 ? (
-            <div className="flex flex-wrap justify-center gap-6">
-              {posts.map((post) => (
-                <div key={post.id} className="w-[371px]">
-                  <BlogCard post={post} thumbnailUrl={post.thumbnail} />
+          {projectsWithPosts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
+              {projectsWithPosts.map(({ project, relatedPosts }) => (
+                <div key={project.id} className="w-full max-w-[550px]">
+                  <ProjectCard project={project} relatedPosts={relatedPosts} />
                 </div>
               ))}
             </div>
           ) : (
             <div className="text-center py-20">
               <p className="text-body text-tertiary">
-                아직 작성된 글이 없습니다.
+                아직 등록된 프로젝트가 없습니다.
               </p>
             </div>
           )}
@@ -72,7 +68,7 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = '오류가 발생했습니다';
-  let details = '블로그를 불러오는 중 문제가 발생했습니다.';
+  let details = '포트폴리오를 불러오는 중 문제가 발생했습니다.';
 
   if (isRouteErrorResponse(error)) {
     message = `${error.status} 오류`;
@@ -87,7 +83,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         <h1 className="text-heading-2 text-primary mb-4">{message}</h1>
         <p className="text-body text-secondary mb-8">{details}</p>
         <a
-          href="/blog"
+          href="/portfolio"
           className="inline-block px-6 py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg text-label hover:opacity-90 transition-opacity"
         >
           다시 시도

@@ -22,8 +22,8 @@ export const siteConfig = {
 
   // 네비게이션 메뉴
   navigation: [
-    { name: 'Blog', href: '/blog' },
-    { name: 'Portfolio', href: '/portfolio' },
+    { name: 'Posts', href: '/posts' },
+    { name: 'Projects', href: '/projects' },
     { name: 'Bookmarks', href: '/bookmarks' },
     { name: 'About', href: '/about' },
   ],
@@ -42,9 +42,13 @@ export const siteConfig = {
 
   // 페이지별 설정
   pages: {
-    blog: {
-      title: 'Blog',
+    posts: {
+      title: 'Posts',
       description: '개발 중 마주친 문제들과 해결 과정을 기록합니다.',
+    },
+    projects: {
+      title: 'Projects',
+      description: '참여했던 프로젝트들과 그 과정에서의 경험을 정리했습니다.',
     },
   },
 } as const;

@@ -2,12 +2,12 @@ import { Link } from 'react-router';
 import { Image, Calendar, Clock } from 'lucide-react';
 import type { Post } from '~/types/post';
 
-interface BlogCardProps {
+interface PostCardProps {
   post: Post;
   thumbnailUrl?: string; // 나중에 실제 이미지 사용 시
 }
 
-export function BlogCard({ post, thumbnailUrl }: BlogCardProps) {
+export function PostCard({ post, thumbnailUrl }: PostCardProps) {
   // 날짜 포맷팅 (ISO 8601 → YYYY.MM.DD)
   const formattedDate = new Date(post.createdAt)
     .toISOString()
