@@ -1,4 +1,5 @@
 import { data, isRouteErrorResponse } from 'react-router';
+import { Search } from 'lucide-react';
 import type { Route } from './+types/blog';
 import { BlogCard } from '~/components/BlogCard';
 import { getPosts } from '~/lib/notion.server';
@@ -33,19 +34,8 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
 
           {/* 검색바 */}
           <div className="relative w-full max-w-[448px]">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                className="text-tertiary"
-              >
-                <circle cx="9" cy="9" r="6" />
-                <path d="M13.5 13.5L17 17" strokeLinecap="round" />
-              </svg>
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary">
+              <Search size={20} />
             </div>
             <input
               type="text"

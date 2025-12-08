@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { Image, ArrowUpRight, FileText } from 'lucide-react';
 import type { Project, Post } from '~/types/post';
 
 interface PortfolioCardProps {
@@ -35,18 +36,7 @@ export function PortfolioCard({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-tertiary text-muted">
-            <svg
-              width="64"
-              height="64"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <path d="M21 15l-5-5L5 21" />
-            </svg>
+            <Image size={64} strokeWidth={1.5} />
           </div>
         )}
       </div>
@@ -68,24 +58,10 @@ export function PortfolioCard({
               href={externalLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="shrink-0 p-1 hover:bg-tertiary rounded transition-colors"
+              className="shrink-0 p-1 hover:bg-tertiary rounded transition-colors text-secondary"
               onClick={(e) => e.stopPropagation()}
             >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                className="text-secondary"
-              >
-                <path
-                  d="M15 5l-10 10M15 5v6M15 5h-6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <ArrowUpRight size={20} />
             </a>
           )}
         </div>
@@ -129,25 +105,9 @@ export function PortfolioCard({
         {/* 관련 트러블슈팅 */}
         {relatedPosts.length > 0 && (
           <div className="flex flex-col gap-3 pt-4 border-t border-default">
-            <div className="flex items-center gap-2">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                className="text-primary"
-              >
-                <path
-                  d="M3 3h10v10H3zM3 7h10"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <p className="text-label-small text-primary font-semibold">
-                관련 트러블슈팅
-              </p>
+            <div className="flex items-center gap-2 text-primary">
+              <FileText size={16} />
+              <p className="text-label-small font-semibold">관련 트러블슈팅</p>
             </div>
             <div className="flex flex-col gap-2">
               {relatedPosts.map((post) => (

@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { Image, Calendar, Clock } from 'lucide-react';
 import type { Post } from '~/types/post';
 
 interface BlogCardProps {
@@ -33,18 +34,7 @@ export function BlogCard({ post, thumbnailUrl }: BlogCardProps) {
         ) : (
           // 임시 플레이스홀더
           <div className="w-full h-full flex items-center justify-center text-muted">
-            <svg
-              width="48"
-              height="48"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <path d="M21 15l-5-5L5 21" />
-            </svg>
+            <Image size={48} strokeWidth={1.5} />
           </div>
         )}
       </div>
@@ -69,39 +59,17 @@ export function BlogCard({ post, thumbnailUrl }: BlogCardProps) {
         </p>
 
         {/* 메타 정보 (날짜, 읽기 시간) */}
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-4 items-center text-tertiary">
           {/* 날짜 */}
           <div className="flex items-center gap-1">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              className="text-tertiary"
-            >
-              <rect x="2" y="3" width="10" height="9" rx="1" />
-              <path d="M2 6h10M5 2v2M9 2v2" />
-            </svg>
-            <span className="text-caption text-tertiary">{formattedDate}</span>
+            <Calendar size={14} />
+            <span className="text-caption">{formattedDate}</span>
           </div>
 
           {/* 읽기 시간 */}
           <div className="flex items-center gap-1">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              className="text-tertiary"
-            >
-              <circle cx="7" cy="7" r="5" />
-              <path d="M7 4v3l2 2" />
-            </svg>
-            <span className="text-caption text-tertiary">{readingTime}</span>
+            <Clock size={14} />
+            <span className="text-caption">{readingTime}</span>
           </div>
         </div>
       </div>

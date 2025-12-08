@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { useTheme, Theme } from 'remix-themes';
+import { Sun, Moon, User } from 'lucide-react';
 import { siteConfig } from '~/config/site';
 
 export function Header() {
@@ -37,66 +38,15 @@ export function Header() {
           {/* 다크모드 토글 */}
           <button
             onClick={toggleDarkMode}
-            className="w-9 h-9 rounded-lg hover:bg-secondary transition-colors flex items-center justify-center"
+            className="w-9 h-9 rounded-lg hover:bg-secondary transition-colors flex items-center justify-center text-secondary"
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {isDark ? (
-                // 달 아이콘 (다크모드일 때)
-                <path
-                  d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-secondary"
-                />
-              ) : (
-                // 해 아이콘 (라이트모드일 때)
-                <>
-                  <circle
-                    cx="10"
-                    cy="10"
-                    r="3"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    className="text-secondary"
-                  />
-                  <path
-                    d="M10 1v2m0 14v2M4.22 4.22l1.42 1.42m8.72 8.72l1.42 1.42M1 10h2m14 0h2M4.22 15.78l1.42-1.42m8.72-8.72l1.42-1.42"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    className="text-secondary"
-                  />
-                </>
-              )}
-            </svg>
+            {isDark ? <Moon size={20} /> : <Sun size={20} />}
           </button>
 
           {/* Login 버튼 (UI만) */}
           <button className="h-10 px-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg text-label flex items-center gap-2 hover:opacity-90 transition-opacity">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M14 14v-1.5a3 3 0 00-3-3H7a3 3 0 00-3 3V14M12 6a3 3 0 11-6 0 3 3 0 016 0z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <User size={18} />
             Login
           </button>
         </div>
