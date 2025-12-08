@@ -14,7 +14,7 @@ export function meta(_args: Route.MetaArgs) {
     { title: `${siteConfig.pages.about.title} - ${siteConfig.name}` },
     {
       name: 'description',
-      content: siteConfig.pages.about.headline,
+      content: siteConfig.pages.about.description,
     },
   ];
 }
