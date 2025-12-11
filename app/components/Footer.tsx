@@ -13,7 +13,7 @@ export function Footer() {
           {/* 소셜 링크 */}
           <div className="flex gap-6">
             <a
-              href={siteConfig.social.github}
+              href={siteConfig.social.github.url}
               target="_blank"
               rel="noopener noreferrer"
               className="text-label-small text-tertiary hover:text-primary transition-colors"
@@ -21,7 +21,7 @@ export function Footer() {
               GitHub
             </a>
             <a
-              href={siteConfig.social.linkedin}
+              href={siteConfig.social.linkedin.url}
               target="_blank"
               rel="noopener noreferrer"
               className="text-label-small text-tertiary hover:text-primary transition-colors"
@@ -29,7 +29,7 @@ export function Footer() {
               LinkedIn
             </a>
             <a
-              href={siteConfig.social.instagram}
+              href={siteConfig.social.instagram.url}
               target="_blank"
               rel="noopener noreferrer"
               className="text-label-small text-tertiary hover:text-primary transition-colors"
