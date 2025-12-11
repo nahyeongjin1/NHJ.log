@@ -1,14 +1,8 @@
-import {
-  MapPin,
-  Mail,
-  Github,
-  Linkedin,
-  Instagram,
-  Briefcase,
-} from 'lucide-react';
+import { MapPin, Mail, Briefcase } from 'lucide-react';
 import type { Route } from './+types/about';
 import { PageLayout } from '~/components/PageLayout';
 import { PageHeader } from '~/components/PageHeader';
+import { SocialLinks } from '~/components/SocialLinks';
 import { siteConfig } from '~/config/site';
 
 export function meta(_args: Route.MetaArgs) {
@@ -44,46 +38,7 @@ export default function AboutPage() {
           </div>
 
           {/* 소셜 링크 */}
-          <div className="flex flex-wrap gap-4">
-            <a
-              href={siteConfig.social.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-secondary flex items-center gap-3 px-5 py-3 border border-subtle rounded-lg hover:border-strong transition-colors"
-            >
-              <Github size={20} className="text-primary" />
-              <div className="flex flex-col">
-                <span className="text-label text-primary">GitHub</span>
-                <span className="text-caption text-tertiary">
-                  @nahyeongjin1
-                </span>
-              </div>
-            </a>
-            <a
-              href={siteConfig.social.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-secondary flex items-center gap-3 px-5 py-3 border border-subtle rounded-lg hover:border-strong transition-colors"
-            >
-              <Linkedin size={20} className="text-primary" />
-              <div className="flex flex-col">
-                <span className="text-label text-primary">LinkedIn</span>
-                <span className="text-caption text-tertiary">Hyeongjin Na</span>
-              </div>
-            </a>
-            <a
-              href={siteConfig.social.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-secondary flex items-center gap-3 px-5 py-3 border border-subtle rounded-lg hover:border-strong transition-colors"
-            >
-              <Instagram size={20} className="text-primary" />
-              <div className="flex flex-col">
-                <span className="text-label text-primary">Instagram</span>
-                <span className="text-caption text-tertiary">@nagudwls</span>
-              </div>
-            </a>
-          </div>
+          <SocialLinks />
         </PageHeader>
       }
     >
