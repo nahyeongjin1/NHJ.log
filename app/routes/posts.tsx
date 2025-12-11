@@ -1,6 +1,7 @@
 import { data, isRouteErrorResponse } from 'react-router';
-import { Search } from 'lucide-react';
 import type { Route } from './+types/posts';
+import { PageLayout } from '~/components/PageLayout';
+import { PageHeader } from '~/components/PageHeader';
 import { PostCard } from '~/components/PostCard';
 import { getPosts } from '~/lib/notion.server';
 import { siteConfig } from '~/config/site';
@@ -21,52 +22,29 @@ export default function PostsPage({ loaderData }: Route.ComponentProps) {
   const { posts } = loaderData;
 
   return (
-    <div className="bg-primary min-h-screen">
-      {/* 타이틀 섹션 */}
-      <section className="max-w-[1260px] mx-auto px-10 pt-[72px]">
-        <div className="flex flex-col gap-6">
-          <h1 className="text-heading-2 text-primary">
-            {siteConfig.pages.posts.title}
-          </h1>
-          <p className="text-body text-secondary">
-            {siteConfig.pages.posts.description}
-          </p>
-
-          {/* 검색바 */}
-          <div className="relative w-full max-w-[448px]">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary">
-              <Search size={20} />
+    <PageLayout
+      header={
+        <PageHeader
+          title={siteConfig.pages.posts.title}
+          description={siteConfig.pages.posts.description}
+          searchPlaceholder="제목, 내용, 카테고리로 검색..."
+        />
+      }
+    >
+      {posts.length > 0 ? (
+        <div className="flex flex-wrap justify-center gap-6">
+          {posts.map((post) => (
+            <div key={post.id} className="w-[371px]">
+              <PostCard post={post} thumbnailUrl={post.thumbnail} />
             </div>
-            <input
-              type="text"
-              placeholder="제목, 내용, 카테고리로 검색..."
-              className="w-full h-10 pl-10 pr-4 bg-tertiary border border-subtle rounded-lg text-label text-primary placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors"
-            />
-          </div>
+          ))}
         </div>
-      </section>
-
-      {/* 블로그 카드 그리드 */}
-      <section className="border-t border-strong mt-[72px]">
-        <div className="max-w-[1260px] mx-auto px-12 py-12">
-          {posts.length > 0 ? (
-            <div className="flex flex-wrap justify-center gap-6">
-              {posts.map((post) => (
-                <div key={post.id} className="w-[371px]">
-                  <PostCard post={post} thumbnailUrl={post.thumbnail} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <p className="text-body text-tertiary">
-                아직 작성된 글이 없습니다.
-              </p>
-            </div>
-          )}
+      ) : (
+        <div className="text-center py-20">
+          <p className="text-body text-tertiary">아직 작성된 글이 없습니다.</p>
         </div>
-      </section>
-    </div>
+      )}
+    </PageLayout>
   );
 }
 
