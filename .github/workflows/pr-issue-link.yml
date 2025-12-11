@@ -291,41 +291,6 @@ jobs:
               console.log('PR body:', prBody);
             }
 
-      - name: Comment on Issue with PR Link
-        if: steps.extract.outputs.found == 'true' && steps.check-issue.outputs.exists == 'true' && github.event.action == 'opened'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const issueNumber = ${{ steps.extract.outputs.issue_number }};
-            const prNumber = context.payload.pull_request.number;
-            const prTitle = context.payload.pull_request.title;
-            const prUrl = context.payload.pull_request.html_url;
-            const prAuthor = context.payload.pull_request.user.login;
-            const branchType = '${{ steps.extract.outputs.branch_type }}' || 'unknown';
-
-            const branchTypeEmoji = {
-              'feature': '🚀',
-              'bugfix': '🐛',
-              'hotfix': '🔥'
-            };
-
-            const commentBody = `
-            ${branchTypeEmoji[branchType] || '🔗'} **Linked Pull Request**
-
-            **#${prNumber}** ${prTitle}
-            👤 Author: @${prAuthor}
-            🔗 [View Pull Request](${prUrl})
-            `.trim();
-
-            // 새 댓글 생성 (opened일 때만 실행되므로 중복 체크 불필요)
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber,
-              body: commentBody
-            });
-            console.log(`✅ Added PR link comment to issue #${issueNumber}`);
-
       - name: Validate Branch Convention
         if: steps.extract.outputs.found == 'false'
         uses: actions/github-script@v7
