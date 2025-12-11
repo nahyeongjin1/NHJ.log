@@ -1,5 +1,7 @@
 import { data, isRouteErrorResponse } from 'react-router';
 import type { Route } from './+types/projects';
+import { PageLayout } from '~/components/PageLayout';
+import { PageHeader } from '~/components/PageHeader';
 import { ProjectCard } from '~/components/ProjectCard';
 import { getProjects, getPosts } from '~/lib/notion.server';
 import { siteConfig } from '~/config/site';
@@ -29,40 +31,30 @@ export default function ProjectsPage({ loaderData }: Route.ComponentProps) {
   const { projectsWithPosts } = loaderData;
 
   return (
-    <div className="bg-primary min-h-screen">
-      {/* 타이틀 섹션 */}
-      <section className="max-w-[1260px] mx-auto px-10 pt-[72px]">
-        <div className="flex flex-col gap-6">
-          <h1 className="text-heading-2 text-primary">
-            {siteConfig.pages.projects.title}
-          </h1>
-          <p className="text-body text-secondary">
-            {siteConfig.pages.projects.description}
+    <PageLayout
+      header={
+        <PageHeader
+          title={siteConfig.pages.projects.title}
+          description={siteConfig.pages.projects.description}
+        />
+      }
+    >
+      {projectsWithPosts.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
+          {projectsWithPosts.map(({ project, relatedPosts }) => (
+            <div key={project.id} className="w-full max-w-[550px]">
+              <ProjectCard project={project} relatedPosts={relatedPosts} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-20">
+          <p className="text-body text-tertiary">
+            아직 등록된 프로젝트가 없습니다.
           </p>
         </div>
-      </section>
-
-      {/* 포트폴리오 카드 그리드 */}
-      <section className="mt-12 border-t border-strong">
-        <div className="max-w-[1260px] mx-auto px-12 py-12">
-          {projectsWithPosts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
-              {projectsWithPosts.map(({ project, relatedPosts }) => (
-                <div key={project.id} className="w-full max-w-[550px]">
-                  <ProjectCard project={project} relatedPosts={relatedPosts} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <p className="text-body text-tertiary">
-                아직 등록된 프로젝트가 없습니다.
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
-    </div>
+      )}
+    </PageLayout>
   );
 }
 
@@ -83,7 +75,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         <h1 className="text-heading-2 text-primary mb-4">{message}</h1>
         <p className="text-body text-secondary mb-8">{details}</p>
         <a
-          href="/portfolio"
+          href="/projects"
           className="inline-block px-6 py-3 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg text-label hover:opacity-90 transition-opacity"
         >
           다시 시도

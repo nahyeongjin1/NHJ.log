@@ -30,9 +30,15 @@ export const siteConfig = {
 
   // 소셜 링크
   social: {
-    github: 'https://github.com/nahyeongjin1',
-    linkedin: 'https://www.linkedin.com/in/hyeongjin-na',
-    instagram: 'https://www.instagram.com/nagudwls',
+    github: { url: 'https://github.com/nahyeongjin1', handle: '@nahyeongjin1' },
+    linkedin: {
+      url: 'https://www.linkedin.com/in/hyeongjin-na',
+      handle: 'Hyeongjin Na',
+    },
+    instagram: {
+      url: 'https://www.instagram.com/nagudwls',
+      handle: '@nagudwls',
+    },
   },
 
   // Footer
