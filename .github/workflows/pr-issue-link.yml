@@ -3,6 +3,8 @@ name: Link PR to Issue
 on:
   pull_request:
     types: [opened, edited]
+    branches:
+      - develop
 
 jobs:
   link-issue:
@@ -180,6 +182,72 @@ jobs:
             });
 
             console.log(`✅ Updated PR description with issue #${issueNumber}`);
+
+      - name: Populate PR Description from Issue Tasks
+        if: steps.extract.outputs.found == 'true' && steps.check-issue.outputs.exists == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = ${{ steps.extract.outputs.issue_number }};
+
+            // Issue body를 직접 가져오기 (특수문자 문제 방지)
+            const issue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber
+            });
+            const issueBody = issue.data.body || '';
+
+            // Issue에서 Tasks 섹션 추출
+            const tasksMatch = issueBody.match(/### ✅ Tasks\s*\n([\s\S]*?)(?=\n###|\n## |$)/);
+
+            if (!tasksMatch) {
+              console.log('⚠️ No Tasks section found in issue');
+              return;
+            }
+
+            const tasksContent = tasksMatch[1].trim();
+
+            // 체크박스를 bullet point로 변환
+            // - [ ] Task → - Task
+            // - [x] Task → - Task
+            const bulletPoints = tasksContent
+              .split('\n')
+              .map(line => line.replace(/^(\s*)-\s*\[[ x]\]\s*/, '$1- '))
+              .join('\n');
+
+            console.log('📝 Extracted tasks:');
+            console.log(bulletPoints);
+
+            // 최신 PR body 가져오기
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            });
+
+            let prBody = pr.data.body || '';
+
+            // Description 섹션의 주석을 tasks로 교체
+            const descriptionPattern = /(## 📝 Description\s*\n+)<!-- 이 PR에서 무엇을 변경했는지 설명해주세요 -->/;
+
+            if (descriptionPattern.test(prBody)) {
+              const newBody = prBody.replace(
+                descriptionPattern,
+                `$1<!-- Issue #${{ steps.extract.outputs.issue_number }} Tasks에서 자동 추출 -->\n\n${bulletPoints}`
+              );
+
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                body: newBody
+              });
+
+              console.log('✅ Populated PR Description from Issue Tasks');
+            } else {
+              console.log('⚠️ Description section placeholder not found (may already be populated)');
+            }
 
       - name: Update Branch Info in PR Body
         if: steps.extract.outputs.found == 'true' && steps.check-issue.outputs.exists == 'true'
