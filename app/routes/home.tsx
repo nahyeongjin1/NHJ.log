@@ -1,5 +1,7 @@
 import { netlifyRouterContext } from '@netlify/vite-plugin-react-router';
 import type { Route } from './+types/home';
+import { PageLayout } from '~/components/PageLayout';
+import { Hero } from '~/components/Hero';
 import { SectionHeader } from '~/components/SectionHeader';
 import { PostCard } from '~/components/PostCard';
 import { getPublishedPosts } from '~/data/mock-posts';
@@ -45,64 +47,43 @@ export default function Home() {
   const featuredPosts = getPublishedPosts().slice(0, 3);
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="bg-primary">
-        <div className="max-w-[1260px] mx-auto px-10 py-32">
-          <h1 className="text-heading-1 text-primary mb-6">
-            {siteConfig.hero.title.line1}
-            <br />
-            {siteConfig.hero.title.line2}
-          </h1>
-          <p className="text-body text-secondary max-w-3xl">
-            {siteConfig.hero.description}
-          </p>
+    <PageLayout header={<Hero />} isHero>
+      {/* Featured Posts */}
+      <div>
+        <SectionHeader
+          title="Featured Posts"
+          subtitle="최근 작성한 글"
+          linkHref="/posts"
+        />
+        <div className="grid grid-cols-3 gap-6 mt-12">
+          {featuredPosts.map((post) => (
+            <PostCard key={post.id} post={post} />
+          ))}
         </div>
-      </section>
+      </div>
 
-      {/* Featured Posts Section */}
-      <section className="bg-primary py-16">
-        <div className="max-w-[1260px] mx-auto px-12">
-          <SectionHeader
-            title="Featured Posts"
-            subtitle="최근 작성한 글"
-            linkHref="/blog"
-          />
-
-          <div className="grid grid-cols-3 gap-6 mt-12">
-            {featuredPosts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Portfolio Section - 자리만 확보 */}
-      <section className="bg-primary py-16">
-        <div className="max-w-[1260px] mx-auto px-12">
-          <SectionHeader
-            title="Portfolio"
-            subtitle="선별한 프로젝트"
-            linkHref="/portfolio"
-          />
-
-          <div className="grid grid-cols-2 gap-6 mt-12">
-            {/* Placeholder - 나중에 PortfolioCard 컴포넌트로 교체 */}
-            <div className="h-[434px] bg-secondary rounded-2xl border border-default flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-body text-tertiary">E-Commerce Platform</p>
-                <p className="text-label-small text-muted mt-2">Coming Soon</p>
-              </div>
+      {/* Portfolio */}
+      <div className="mt-16">
+        <SectionHeader
+          title="Portfolio"
+          subtitle="선별한 프로젝트"
+          linkHref="/projects"
+        />
+        <div className="grid grid-cols-2 gap-6 mt-12">
+          <div className="h-[434px] bg-secondary rounded-2xl border border-default flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-body text-tertiary">E-Commerce Platform</p>
+              <p className="text-label-small text-muted mt-2">Coming Soon</p>
             </div>
-            <div className="h-[434px] bg-secondary rounded-2xl border border-default flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-body text-tertiary">Design System</p>
-                <p className="text-label-small text-muted mt-2">Coming Soon</p>
-              </div>
+          </div>
+          <div className="h-[434px] bg-secondary rounded-2xl border border-default flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-body text-tertiary">Design System</p>
+              <p className="text-label-small text-muted mt-2">Coming Soon</p>
             </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </PageLayout>
   );
 }
