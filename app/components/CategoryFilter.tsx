@@ -17,7 +17,7 @@ export function CategoryFilter({
         onClick={() => onChange(null)}
         className={`px-4 py-2 rounded-lg text-label transition-colors ${
           selected === null
-            ? 'bg-primary text-[var(--bg-primary)]'
+            ? 'bg-secondary text-tertiary opacity-60'
             : 'bg-tertiary text-secondary hover:text-primary'
         }`}
       >
@@ -32,7 +32,7 @@ export function CategoryFilter({
           onClick={() => onChange(category)}
           className={`px-4 py-2 rounded-lg text-label transition-colors ${
             selected === category
-              ? 'bg-primary text-[var(--bg-primary)]'
+              ? 'bg-secondary text-tertiary opacity-60'
               : 'bg-tertiary text-secondary hover:text-primary'
           }`}
         >

@@ -13,7 +13,8 @@ export function Badge({
   size = 'sm',
   className = '',
 }: BadgeProps) {
-  const baseStyles = 'inline-flex items-center rounded-full font-medium';
+  const baseStyles =
+    'inline-flex bg-secondary items-center rounded-full font-medium';
 
   const variantStyles = {
     filled: 'bg-tertiary text-primary',

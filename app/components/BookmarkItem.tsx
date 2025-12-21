@@ -33,7 +33,7 @@ export function BookmarkItem({ bookmark }: BookmarkItemProps) {
   const formattedDate = new Date(createdAt).toLocaleDateString('ko-KR');
 
   return (
-    <div className="flex gap-4 py-4 border-b border-subtle last:border-b-0">
+    <div className="flex gap-4 py-4 px-2 -mx-2 border-b border-default last:border-b-0 rounded-lg hover:bg-hover-subtle transition-colors">
       {/* Favicon */}
       <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
         {faviconErrorCount < 2 ? (
