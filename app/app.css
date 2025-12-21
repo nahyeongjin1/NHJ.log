@@ -10,6 +10,11 @@
     --bg-secondary: theme('colors.gray.200');
     --bg-tertiary: theme('colors.gray.300');
     --bg-hover: theme('colors.gray.200');
+    --bg-hover-subtle: color-mix(
+      in srgb,
+      theme('colors.gray.200') 50%,
+      transparent
+    );
 
     --text-primary: theme('colors.gray.800');
     --text-secondary: theme('colors.gray.600');
@@ -27,6 +32,11 @@
     --bg-secondary: theme('colors.gray.800');
     --bg-tertiary: theme('colors.gray.700');
     --bg-hover: theme('colors.gray.800');
+    --bg-hover-subtle: color-mix(
+      in srgb,
+      theme('colors.gray.800') 50%,
+      transparent
+    );
 
     --text-primary: theme('colors.gray.200');
     --text-secondary: theme('colors.gray.400');
@@ -45,6 +55,11 @@
       --bg-secondary: theme('colors.gray.800');
       --bg-tertiary: theme('colors.gray.700');
       --bg-hover: theme('colors.gray.800');
+      --bg-hover-subtle: color-mix(
+        in srgb,
+        theme('colors.gray.800') 50%,
+        transparent
+      );
 
       --text-primary: theme('colors.gray.200');
       --text-secondary: theme('colors.gray.400');

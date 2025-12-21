@@ -57,6 +57,7 @@ export default {
         secondary: 'var(--bg-secondary)',
         tertiary: 'var(--bg-tertiary)',
         hover: 'var(--bg-hover)',
+        'hover-subtle': 'var(--bg-hover-subtle)',
       },
       borderColor: {
         default: 'var(--border-default)',
