@@ -5,6 +5,7 @@ interface PageHeaderProps {
   title: string;
   description: string;
   searchPlaceholder?: string;
+  onSearch?: (query: string) => void;
   children?: ReactNode;
 }
 
@@ -12,6 +13,7 @@ export function PageHeader({
   title,
   description,
   searchPlaceholder,
+  onSearch,
   children,
 }: PageHeaderProps) {
   return (
@@ -27,6 +29,7 @@ export function PageHeader({
           <input
             type="text"
             placeholder={searchPlaceholder}
+            onChange={(e) => onSearch?.(e.target.value)}
             className="w-full h-10 pl-10 pr-4 bg-tertiary border border-subtle rounded-lg text-label text-primary placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors"
           />
         </div>

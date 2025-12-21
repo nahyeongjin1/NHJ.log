@@ -56,6 +56,10 @@ export const siteConfig = {
       title: 'Projects',
       description: '참여했던 프로젝트들과 그 과정에서의 경험을 정리했습니다.',
     },
+    bookmarks: {
+      title: 'Bookmarks',
+      description: '유용한 기술 아티클, 도구, 라이브러리 모음',
+    },
     about: {
       title: 'About',
       description: '소개, 활동, 기술 스택 등을 확인할 수 있습니다.',
