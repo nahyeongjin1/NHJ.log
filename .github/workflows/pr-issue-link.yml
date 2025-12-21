@@ -228,13 +228,13 @@ jobs:
 
             let prBody = pr.data.body || '';
 
-            // Description 섹션의 주석을 tasks로 교체
-            const descriptionPattern = /(## 📝 Description\s*\n+)<!-- 이 PR에서 무엇을 변경했는지 설명해주세요 -->/;
+            // Description 섹션의 주석 밑에 tasks 추가
+            const descriptionPattern = /(## 📝 Description\s*\n+<!--[^>]*-->\s*\n*)/;
 
             if (descriptionPattern.test(prBody)) {
               const newBody = prBody.replace(
                 descriptionPattern,
-                `$1<!-- Issue #${{ steps.extract.outputs.issue_number }} Tasks에서 자동 추출 -->\n\n${bulletPoints}`
+                `$1${bulletPoints}\n\n`
               );
 
               await github.rest.pulls.update({
