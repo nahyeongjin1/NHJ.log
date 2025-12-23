@@ -228,6 +228,13 @@ jobs:
 
             let prBody = pr.data.body || '';
 
+            // Description 섹션에 이미 bullet point가 있는지 확인
+            const descriptionContentMatch = prBody.match(/## 📝 Description\s*\n+<!--[^>]*-->\s*\n*([\s\S]*?)(?=\n## |$)/);
+            if (descriptionContentMatch && descriptionContentMatch[1].trim().startsWith('-')) {
+              console.log('✅ Description already populated, skipping');
+              return;
+            }
+
             // Description 섹션의 주석 밑에 tasks 추가
             const descriptionPattern = /(## 📝 Description\s*\n+<!--[^>]*-->\s*\n*)/;
 
