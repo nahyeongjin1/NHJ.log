@@ -9,7 +9,7 @@ import { siteConfig } from '~/config/site';
 
 export function meta(_args: Route.MetaArgs) {
   return [
-    { title: `${siteConfig.name} - ${siteConfig.description}` },
+    { title: `${siteConfig.name}` },
     { name: 'description', content: siteConfig.description },
   ];
 }
