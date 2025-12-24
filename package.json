@@ -11,7 +11,8 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
-    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\""
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "sync-notion": "tsx -r tsconfig-paths/register --env-file=.env scripts/sync-notion.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.957.0",
@@ -45,6 +46,8 @@
     "postcss": "^8.5.3",
     "prettier": "^3.6.2",
     "tailwindcss": "^3.4.17",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.3",
     "vite-tsconfig-paths": "^5.1.4"
