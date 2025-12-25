@@ -1,4 +1,9 @@
-import { getPosts, getProjects, getBookmarks } from '~/lib/notion.server';
+import {
+  getPosts,
+  getProjects,
+  getBookmarks,
+  getPageBlocks,
+} from '~/lib/notion.server';
 
 async function main() {
   console.log('🚀 Starting Notion sync...\n');
@@ -19,7 +24,9 @@ async function main() {
   console.log('📝 Converting posts to MDX...');
   for (const post of posts) {
     console.log(`   - ${post.title}`);
-    // TODO: 블록 가져오기 + MDX 변환
+    const blocks = await getPageBlocks(post.id);
+    console.log(`     └─ Blocks: ${blocks.length}`);
+    // TODO: MDX 변환
   }
 
   // 3. 메타데이터 저장
