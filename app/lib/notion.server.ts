@@ -1,6 +1,15 @@
 import { Client } from '@notionhq/client';
-import type { PageObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+import type {
+  PageObjectResponse,
+  BlockObjectResponse,
+} from '@notionhq/client/build/src/api-endpoints';
 import type { Post, Project, Bookmark } from '~/types/post';
+
+// 블록 + children 트리 구조
+export interface BlockWithChildren {
+  block: BlockObjectResponse;
+  children: BlockWithChildren[];
+}
 
 // Notion 클라이언트 초기화
 const notion = new Client({
@@ -260,4 +269,59 @@ export async function getBookmarks(options?: {
   return response.results
     .filter((page): page is PageObjectResponse => 'properties' in page)
     .map(parseBookmark);
+}
+
+/**
+ * Blocks APIs
+ */
+
+async function fetchBlockChildren(
+  blockId: string
+): Promise<BlockObjectResponse[]> {
+  const blocks: BlockObjectResponse[] = [];
+  let cursor: string | undefined;
+
+  // 페이지네이션 처리 (100개 제한)
+  do {
+    const response = await notion.blocks.children.list({
+      block_id: blockId,
+      start_cursor: cursor,
+      page_size: 100,
+    });
+
+    const validBlocks = response.results.filter(
+      (block): block is BlockObjectResponse => 'type' in block
+    );
+    blocks.push(...validBlocks);
+
+    cursor = response.has_more
+      ? (response.next_cursor ?? undefined)
+      : undefined;
+  } while (cursor);
+
+  return blocks;
+}
+
+async function fetchBlocksRecursive(
+  blockId: string
+): Promise<BlockWithChildren[]> {
+  const blocks = await fetchBlockChildren(blockId);
+
+  const blocksWithChildren: BlockWithChildren[] = await Promise.all(
+    blocks.map(async (block) => {
+      const children = block.has_children
+        ? await fetchBlocksRecursive(block.id)
+        : [];
+
+      return { block, children };
+    })
+  );
+
+  return blocksWithChildren;
+}
+
+export async function getPageBlocks(
+  pageId: string
+): Promise<BlockWithChildren[]> {
+  return fetchBlocksRecursive(pageId);
 }
