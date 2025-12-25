@@ -84,14 +84,32 @@ function convertBlock(
     case 'paragraph':
       return convertRichText(block.paragraph.rich_text);
 
-    case 'heading_1':
-      return `# ${convertRichText(block.heading_1.rich_text)}`;
+    case 'heading_1': {
+      const text = convertRichText(block.heading_1.rich_text);
+      if (block.heading_1.is_toggleable && children.length > 0) {
+        const childContent = convertBlocks(children);
+        return `<Toggle>\n<summary>\n# ${text}\n</summary>\n\n${childContent}\n</Toggle>`;
+      }
+      return `# ${text}`;
+    }
 
-    case 'heading_2':
-      return `## ${convertRichText(block.heading_2.rich_text)}`;
+    case 'heading_2': {
+      const text = convertRichText(block.heading_2.rich_text);
+      if (block.heading_2.is_toggleable && children.length > 0) {
+        const childContent = convertBlocks(children);
+        return `<Toggle>\n<summary>\n## ${text}\n</summary>\n\n${childContent}\n</Toggle>`;
+      }
+      return `## ${text}`;
+    }
 
-    case 'heading_3':
-      return `### ${convertRichText(block.heading_3.rich_text)}`;
+    case 'heading_3': {
+      const text = convertRichText(block.heading_3.rich_text);
+      if (block.heading_3.is_toggleable && children.length > 0) {
+        const childContent = convertBlocks(children);
+        return `<Toggle>\n<summary>\n### ${text}\n</summary>\n\n${childContent}\n</Toggle>`;
+      }
+      return `### ${text}`;
+    }
 
     case 'bulleted_list_item': {
       const text = convertRichText(block.bulleted_list_item.rich_text);
@@ -121,9 +139,23 @@ function convertBlock(
     case 'divider':
       return '---';
 
+    case 'callout': {
+      const icon =
+        block.callout.icon?.type === 'emoji' ? block.callout.icon.emoji : '💡';
+      const text = convertRichText(block.callout.rich_text);
+      const childContent = children.length > 0 ? convertBlocks(children) : '';
+      const parts = [text, childContent].filter(Boolean);
+      const content = parts.join('\n\n');
+      return `<Callout icon="${icon}">\n${content}\n</Callout>`;
+    }
+
+    case 'toggle': {
+      const title = convertRichText(block.toggle.rich_text);
+      const childContent = children.length > 0 ? convertBlocks(children) : '';
+      return `<Toggle>\n<summary>\n${title}\n</summary>\n\n${childContent}\n</Toggle>`;
+    }
+
     // TODO: 추후 구현
-    case 'callout':
-    case 'toggle':
     case 'code':
     case 'image':
     case 'bookmark':
