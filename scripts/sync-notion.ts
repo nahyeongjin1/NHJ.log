@@ -29,8 +29,8 @@ async function main() {
     console.log(`     └─ Blocks: ${blocks.length}`);
 
     const mdx = convertBlocks(blocks);
-    console.log('\n--- MDX Preview (first 500 chars) ---');
-    console.log(mdx.slice(0, 500));
+    console.log('\n--- MDX Preview (first 1000 chars) ---');
+    console.log(mdx.slice(0, 1000));
     console.log('---\n');
 
     // 첫 번째 포스트만 테스트
