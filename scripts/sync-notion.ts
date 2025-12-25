@@ -4,6 +4,7 @@ import {
   getBookmarks,
   getPageBlocks,
 } from '~/lib/notion.server';
+import { convertBlocks } from './notion-to-mdx';
 
 async function main() {
   console.log('🚀 Starting Notion sync...\n');
@@ -26,7 +27,14 @@ async function main() {
     console.log(`   - ${post.title}`);
     const blocks = await getPageBlocks(post.id);
     console.log(`     └─ Blocks: ${blocks.length}`);
-    // TODO: MDX 변환
+
+    const mdx = convertBlocks(blocks);
+    console.log('\n--- MDX Preview (first 500 chars) ---');
+    console.log(mdx.slice(0, 500));
+    console.log('---\n');
+
+    // 첫 번째 포스트만 테스트
+    break;
   }
 
   // 3. 메타데이터 저장
