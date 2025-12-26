@@ -4,7 +4,7 @@ import {
   getBookmarks,
   getPageBlocks,
 } from '~/lib/notion.server';
-import { convertBlocks } from './notion-to-mdx';
+import { convertBlocksAsync } from './notion-to-mdx';
 
 async function main() {
   console.log('🚀 Starting Notion sync...\n');
@@ -28,7 +28,7 @@ async function main() {
     const blocks = await getPageBlocks(post.id);
     console.log(`     └─ Blocks: ${blocks.length}`);
 
-    const mdx = convertBlocks(blocks);
+    const mdx = await convertBlocksAsync(blocks);
     console.log('\n--- MDX Preview (first 1000 chars) ---');
     console.log(mdx.slice(0, 1000));
     console.log('---\n');
