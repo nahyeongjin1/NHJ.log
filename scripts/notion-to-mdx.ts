@@ -155,10 +155,23 @@ function convertBlock(
       return `<Toggle>\n<summary>\n${title}\n</summary>\n\n${childContent}\n</Toggle>`;
     }
 
+    case 'code': {
+      const rawLang = block.code.language || 'text';
+      const language = rawLang === 'plain text' ? 'text' : rawLang;
+      const code = block.code.rich_text.map((t) => t.plain_text).join('');
+      const caption = block.code.caption
+        .map((t) => t.plain_text)
+        .join('')
+        .trim();
+      const captionComment = caption ? `{/* ${caption} */}\n` : '';
+      return `${captionComment}\`\`\`${language}\n${code}\n\`\`\``;
+    }
+
     // TODO: 추후 구현
-    case 'code':
     case 'image':
     case 'bookmark':
+    case 'link_preview':
+    case 'embed':
     case 'table':
     case 'table_row':
       return `{/* TODO: ${block.type} */}`;
