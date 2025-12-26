@@ -26,6 +26,10 @@ export const links: Route.LinksFunction = () => [
     rel: 'stylesheet',
     href: 'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css',
   },
+  {
+    rel: 'stylesheet',
+    href: 'https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css',
+  },
   { rel: 'stylesheet', href: stylesheet },
 ];
 

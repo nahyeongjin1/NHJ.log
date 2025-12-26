@@ -22,6 +22,17 @@ export default {
           '"Segoe UI Symbol"',
           'sans-serif',
         ],
+        mono: [
+          '"Fira Code"',
+          'ui-monospace',
+          'SFMono-Regular',
+          'Menlo',
+          'Monaco',
+          'Consolas',
+          '"Liberation Mono"',
+          '"Courier New"',
+          'monospace',
+        ],
       },
       colors: {
         // Primitives
