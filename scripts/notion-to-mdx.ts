@@ -1,9 +1,20 @@
 import type { RichTextItemResponse } from '@notionhq/client/build/src/api-endpoints';
 import type { BlockWithChildren } from '~/lib/notion.server';
+import { uploadFromUrl, type ContentType } from '~/lib/r2.server';
 import { fetchLinkMetadata, type LinkMetadata } from './fetch-metadata';
 
 // 메타데이터 맵 (URL → 메타데이터)
 type MetadataMap = Map<string, LinkMetadata>;
+
+// 이미지 맵 (blockId → { r2Url, caption })
+type ImageMap = Map<string, { r2Url: string; caption: string }>;
+
+// 이미지 정보
+interface ImageInfo {
+  blockId: string;
+  url: string;
+  caption: string;
+}
 
 /**
  * 블록에서 메타데이터가 필요한 URL들 수집
@@ -39,6 +50,66 @@ async function fetchAllMetadata(urls: string[]): Promise<MetadataMap> {
   const map: MetadataMap = new Map();
   for (const metadata of metadataList) {
     map.set(metadata.url, metadata);
+  }
+  return map;
+}
+
+/**
+ * 블록에서 이미지 정보 수집
+ */
+function collectImages(blocks: BlockWithChildren[]): ImageInfo[] {
+  const images: ImageInfo[] = [];
+
+  for (const { block, children } of blocks) {
+    if (block.type === 'image') {
+      const url =
+        block.image.type === 'file'
+          ? block.image.file.url
+          : block.image.external.url;
+      const caption = block.image.caption
+        .map((t) => t.plain_text)
+        .join('')
+        .trim();
+
+      images.push({
+        blockId: block.id,
+        url,
+        caption,
+      });
+    }
+
+    // 재귀적으로 children도 수집
+    if (children.length > 0) {
+      images.push(...collectImages(children));
+    }
+  }
+
+  return images;
+}
+
+/**
+ * 이미지들을 R2에 업로드
+ */
+async function uploadAllImages(
+  images: ImageInfo[],
+  pageId: string,
+  contentType: ContentType
+): Promise<ImageMap> {
+  const results = await Promise.all(
+    images.map(async (img) => {
+      const result = await uploadFromUrl(img.url, {
+        contentType,
+        pageId,
+        blockId: img.blockId,
+        skipIfExists: true,
+      });
+      return { blockId: img.blockId, r2Url: result.url, caption: img.caption };
+    })
+  );
+
+  const map: ImageMap = new Map();
+  for (const { blockId, r2Url, caption } of results) {
+    map.set(blockId, { r2Url, caption });
   }
   return map;
 }
@@ -109,34 +180,50 @@ function convertRichTextItem(item: RichTextItemResponse): string {
   return text;
 }
 
-/**
- * 블록 변환 (메타데이터 fetch 포함, async)
- */
-export async function convertBlocksAsync(
-  blocks: BlockWithChildren[]
-): Promise<string> {
-  // 1. URL 수집
-  const urls = collectUrls(blocks);
-
-  // 2. 메타데이터 병렬 fetch
-  const metadataMap =
-    urls.length > 0 ? await fetchAllMetadata(urls) : new Map();
-
-  // 3. 변환
-  return convertBlocksWithMetadata(blocks, metadataMap);
+export interface ConvertOptions {
+  pageId: string;
+  contentType: ContentType;
 }
 
 /**
- * 블록 변환 (동기, 메타데이터 맵 필요)
+ * 블록 변환 (메타데이터 fetch + 이미지 업로드 포함, async)
  */
-function convertBlocksWithMetadata(
+export async function convertBlocksAsync(
   blocks: BlockWithChildren[],
-  metadataMap: MetadataMap
+  options: ConvertOptions
+): Promise<string> {
+  // 1. URL 수집 (bookmark, link_preview)
+  const urls = collectUrls(blocks);
+
+  // 2. 이미지 수집
+  const images = collectImages(blocks);
+
+  // 3. 병렬 처리: 메타데이터 fetch + 이미지 업로드
+  const [metadataMap, imageMap] = await Promise.all([
+    urls.length > 0
+      ? fetchAllMetadata(urls)
+      : Promise.resolve(new Map<string, LinkMetadata>()),
+    images.length > 0
+      ? uploadAllImages(images, options.pageId, options.contentType)
+      : Promise.resolve(new Map<string, { r2Url: string; caption: string }>()),
+  ]);
+
+  // 4. 변환
+  return convertBlocksWithMaps(blocks, metadataMap, imageMap);
+}
+
+/**
+ * 블록 변환 (동기, 메타데이터 + 이미지 맵 필요)
+ */
+function convertBlocksWithMaps(
+  blocks: BlockWithChildren[],
+  metadataMap: MetadataMap,
+  imageMap: ImageMap
 ): string {
   const lines: string[] = [];
 
   for (const { block, children } of blocks) {
-    const converted = convertBlock(block, children, metadataMap);
+    const converted = convertBlock(block, children, metadataMap, imageMap);
     if (converted !== null) {
       lines.push(converted);
     }
@@ -148,7 +235,8 @@ function convertBlocksWithMetadata(
 function convertBlock(
   block: BlockWithChildren['block'],
   children: BlockWithChildren[],
-  metadataMap: MetadataMap = new Map()
+  metadataMap: MetadataMap,
+  imageMap: ImageMap
 ): string | null {
   switch (block.type) {
     case 'paragraph':
@@ -157,7 +245,11 @@ function convertBlock(
     case 'heading_1': {
       const text = convertRichText(block.heading_1.rich_text);
       if (block.heading_1.is_toggleable && children.length > 0) {
-        const childContent = convertBlocksWithMetadata(children, metadataMap);
+        const childContent = convertBlocksWithMaps(
+          children,
+          metadataMap,
+          imageMap
+        );
         return `<Toggle>\n<summary>\n# ${text}\n</summary>\n\n${childContent}\n</Toggle>`;
       }
       return `# ${text}`;
@@ -166,7 +258,11 @@ function convertBlock(
     case 'heading_2': {
       const text = convertRichText(block.heading_2.rich_text);
       if (block.heading_2.is_toggleable && children.length > 0) {
-        const childContent = convertBlocksWithMetadata(children, metadataMap);
+        const childContent = convertBlocksWithMaps(
+          children,
+          metadataMap,
+          imageMap
+        );
         return `<Toggle>\n<summary>\n## ${text}\n</summary>\n\n${childContent}\n</Toggle>`;
       }
       return `## ${text}`;
@@ -175,7 +271,11 @@ function convertBlock(
     case 'heading_3': {
       const text = convertRichText(block.heading_3.rich_text);
       if (block.heading_3.is_toggleable && children.length > 0) {
-        const childContent = convertBlocksWithMetadata(children, metadataMap);
+        const childContent = convertBlocksWithMaps(
+          children,
+          metadataMap,
+          imageMap
+        );
         return `<Toggle>\n<summary>\n### ${text}\n</summary>\n\n${childContent}\n</Toggle>`;
       }
       return `### ${text}`;
@@ -183,13 +283,23 @@ function convertBlock(
 
     case 'bulleted_list_item': {
       const text = convertRichText(block.bulleted_list_item.rich_text);
-      const childContent = convertChildrenIndented(children, '  ', metadataMap);
+      const childContent = convertChildrenIndented(
+        children,
+        '  ',
+        metadataMap,
+        imageMap
+      );
       return childContent ? `- ${text}\n${childContent}` : `- ${text}`;
     }
 
     case 'numbered_list_item': {
       const text = convertRichText(block.numbered_list_item.rich_text);
-      const childContent = convertChildrenIndented(children, '  ', metadataMap);
+      const childContent = convertChildrenIndented(
+        children,
+        '  ',
+        metadataMap,
+        imageMap
+      );
       return childContent ? `1. ${text}\n${childContent}` : `1. ${text}`;
     }
 
@@ -197,7 +307,7 @@ function convertBlock(
       const text = convertRichText(block.quote.rich_text);
       const childContent =
         children.length > 0
-          ? convertBlocksWithMetadata(children, metadataMap)
+          ? convertBlocksWithMaps(children, metadataMap, imageMap)
           : '';
       const quoteLines = text.split('\n').map((line) => `> ${line}`);
       if (childContent) {
@@ -218,7 +328,7 @@ function convertBlock(
       const text = convertRichText(block.callout.rich_text);
       const childContent =
         children.length > 0
-          ? convertBlocksWithMetadata(children, metadataMap)
+          ? convertBlocksWithMaps(children, metadataMap, imageMap)
           : '';
       const parts = [text, childContent].filter(Boolean);
       const content = parts.join('\n\n');
@@ -229,7 +339,7 @@ function convertBlock(
       const title = convertRichText(block.toggle.rich_text);
       const childContent =
         children.length > 0
-          ? convertBlocksWithMetadata(children, metadataMap)
+          ? convertBlocksWithMaps(children, metadataMap, imageMap)
           : '';
       return `<Toggle>\n<summary>\n${title}\n</summary>\n\n${childContent}\n</Toggle>`;
     }
@@ -274,8 +384,18 @@ function convertBlock(
       return `<Embed url="${url}" />`;
     }
 
+    case 'image': {
+      const imageData = imageMap.get(block.id);
+      if (imageData) {
+        const altAttr = imageData.caption
+          ? ` alt="${escapeString(imageData.caption)}"`
+          : '';
+        return `<Image src="${imageData.r2Url}"${altAttr} />`;
+      }
+      return `{/* Image not found: ${block.id} */}`;
+    }
+
     // TODO: 추후 구현
-    case 'image':
     case 'table':
     case 'table_row':
       return `{/* TODO: ${block.type} */}`;
@@ -289,13 +409,14 @@ function convertBlock(
 function convertChildrenIndented(
   children: BlockWithChildren[],
   indent: string,
-  metadataMap: MetadataMap = new Map()
+  metadataMap: MetadataMap,
+  imageMap: ImageMap
 ): string {
   if (children.length === 0) return '';
 
   const childLines: string[] = [];
   for (const { block, children: grandChildren } of children) {
-    const converted = convertBlock(block, grandChildren, metadataMap);
+    const converted = convertBlock(block, grandChildren, metadataMap, imageMap);
     if (converted !== null) {
       // 각 줄에 indent 추가
       const indented = converted

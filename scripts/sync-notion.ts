@@ -28,7 +28,10 @@ async function main() {
     const blocks = await getPageBlocks(post.id);
     console.log(`     └─ Blocks: ${blocks.length}`);
 
-    const mdx = await convertBlocksAsync(blocks);
+    const mdx = await convertBlocksAsync(blocks, {
+      pageId: post.id,
+      contentType: 'posts',
+    });
     console.log('\n--- MDX Preview (first 1000 chars) ---');
     console.log(mdx.slice(0, 1000));
     console.log('---\n');
