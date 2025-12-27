@@ -93,7 +93,7 @@ export default function PostPage() {
         </div>
       }
     >
-      <article className="prose prose-neutral dark:prose-invert max-w-none">
+      <article className="prose max-w-none">
         {/* eslint-disable-next-line react-hooks/static-components  */}
         <MdxContent />
       </article>
