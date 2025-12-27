@@ -353,6 +353,13 @@ function convertBlock(
         .join('')
         .trim();
       const captionComment = caption ? `{/* ${caption} */}\n` : '';
+
+      // Mermaid는 별도 컴포넌트로 처리
+      if (language === 'mermaid') {
+        const escapedCode = code.replace(/`/g, '\\`').replace(/\$/g, '\\$');
+        return `${captionComment}<Mermaid chart={\`${escapedCode}\`} />`;
+      }
+
       return `${captionComment}\`\`\`${language}\n${code}\n\`\`\``;
     }
 
