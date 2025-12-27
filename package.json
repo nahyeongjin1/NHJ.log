@@ -17,7 +17,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.957.0",
     "@mdx-js/react": "^3.1.1",
-    "@mdx-js/rollup": "^3.1.1",
     "@notionhq/client": "^5.4.0",
     "@react-router/node": "^7.11.0",
     "@tailwindcss/typography": "^0.5.19",
