@@ -83,6 +83,23 @@ function getUrlProperty(
   return undefined;
 }
 
+function getFilesProperty(
+  page: PageObjectResponse,
+  propertyName: string
+): string | undefined {
+  const property = page.properties[propertyName];
+  if (property?.type === 'files' && property.files.length > 0) {
+    const file = property.files[0];
+    if (file.type === 'file') {
+      return file.file.url;
+    }
+    if (file.type === 'external') {
+      return file.external.url;
+    }
+  }
+  return undefined;
+}
+
 function getDateProperty(
   page: PageObjectResponse,
   propertyName: string
@@ -129,7 +146,7 @@ function parsePost(page: PageObjectResponse): Post {
     slug: getTextProperty(page, 'slug'),
     excerpt: getTextProperty(page, 'excerpt'),
     tags: getMultiSelectProperty(page, 'tags'),
-    thumbnail: getUrlProperty(page, 'thumbnail'),
+    thumbnail: getFilesProperty(page, 'thumbnail'),
     published: getCheckboxProperty(page, 'published'),
     createdAt: getCreatedTime(page),
     updatedAt: getUpdatedTime(page),
@@ -192,7 +209,7 @@ function parseProject(page: PageObjectResponse): Project {
     techStack: getMultiSelectProperty(page, 'techStack'),
     github: getUrlProperty(page, 'github'),
     demo: getUrlProperty(page, 'demo'),
-    thumbnail: getUrlProperty(page, 'thumbnail'),
+    thumbnail: getFilesProperty(page, 'thumbnail'),
     published: getCheckboxProperty(page, 'published'),
     createdAt: getCreatedTime(page),
     updatedAt: getUpdatedTime(page),
