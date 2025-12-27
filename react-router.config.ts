@@ -8,14 +8,14 @@ export default {
   future: {
     v8_middleware: true,
   },
-  async prerender() {
-    return [
-      '/',
-      '/posts',
-      '/projects',
-      '/bookmarks',
-      '/about',
-      ...(await mdx.paths()),
-    ];
-  },
+  // async prerender() {
+  //   return [
+  //     '/',
+  //     '/posts',
+  //     '/projects',
+  //     '/bookmarks',
+  //     '/about',
+  //     ...(await mdx.paths()),
+  //   ];
+  // },
 } satisfies Config;
