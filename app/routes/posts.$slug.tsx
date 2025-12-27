@@ -1,12 +1,10 @@
 import { useMdxComponent, useMdxAttributes } from 'react-router-mdx/client';
-import { loadMdx } from 'react-router-mdx/server';
+import { init, loadMdx } from 'react-router-mdx/server';
 import rehypePrettyCode from 'rehype-pretty-code';
 import remarkGfm from 'remark-gfm';
 import type { Route } from './+types/posts.$slug';
 import { PageLayout } from '~/components/PageLayout';
 import { siteConfig } from '~/config/site';
-
-// MDX 커스텀 컴포넌트
 import { Callout } from '~/components/mdx/Callout';
 import { Toggle } from '~/components/mdx/Toggle';
 import { Image } from '~/components/mdx/Image';
@@ -53,6 +51,9 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+  // Initialize at runtime (needed for serverless environments like Netlify)
+  init({ path: 'content/posts', alias: 'posts' });
+
   return loadMdx(request, {
     remarkPlugins: [remarkGfm],
     rehypePlugins: [
