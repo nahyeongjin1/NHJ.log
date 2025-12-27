@@ -97,18 +97,41 @@ import { Mermaid } from '~/components/mdx/Mermaid';
 `;
 
 /**
+ * Frontmatter 생성
+ */
+function generateFrontmatter(post: Post): string {
+  const lines = [
+    '---',
+    `title: "${post.title.replace(/"/g, '\\"')}"`,
+    `excerpt: "${post.excerpt.replace(/"/g, '\\"')}"`,
+    `createdAt: "${post.createdAt}"`,
+    `updatedAt: "${post.updatedAt}"`,
+    `tags: [${post.tags.map((t) => `"${t}"`).join(', ')}]`,
+  ];
+
+  if (post.thumbnail) {
+    lines.push(`thumbnail: "${post.thumbnail}"`);
+  }
+
+  lines.push('---');
+  return lines.join('\n');
+}
+
+/**
  * MDX 파일 저장
  */
 async function saveMdx(
   contentType: 'posts' | 'projects',
   slug: string,
-  content: string
+  content: string,
+  post: Post
 ): Promise<void> {
   const dir = path.join(CONTENT_DIR, contentType);
   await fs.mkdir(dir, { recursive: true });
 
+  const frontmatter = generateFrontmatter(post);
   const filepath = path.join(dir, `${slug}.mdx`);
-  const mdxContent = `${MDX_IMPORTS}\n${content}`;
+  const mdxContent = `${frontmatter}\n\n${MDX_IMPORTS}\n${content}`;
   await fs.writeFile(filepath, mdxContent, 'utf-8');
 }
 
@@ -137,7 +160,7 @@ async function main() {
     console.log(`   - ${post.title}`);
     const { metadata, mdx } = await processPost(post);
     processedPosts.push(metadata);
-    await saveMdx('posts', post.slug, mdx);
+    await saveMdx('posts', post.slug, mdx, metadata);
   }
 
   // 3. Projects 처리
