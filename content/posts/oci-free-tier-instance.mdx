@@ -1,0 +1,314 @@
+---
+title: "OCI Free Tier 인스턴스 확보 삽질기"
+excerpt: "AI 서버의 도커 이미지 크기가 너무 커져 Azure VM에서 OCI instance로 마이그레이션 하기 위한 여정"
+createdAt: "2025-12-19T09:14:00.000Z"
+updatedAt: "2025-12-27T09:03:00.000Z"
+tags: ["Infra", "Script", "Cron Job", "GIthub Actions"]
+thumbnail: "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2cebdc82-a936-804e-8b53-f19167685081/thumbnail.png"
+---
+
+## TL;DR
+
+<Callout icon="💡">
+- OCI Free Tier A1은 스펙이 너무 좋아서 전 세계가 경쟁 중
+
+- Cloud Shell → GitHub Actions → 결국 Azure VM에서 크론잡
+
+- **7일 만에 크리스마스 선물로 성공! 🎄**
+</Callout>
+
+---
+
+## 배경: 왜 OCI가 필요했나
+
+### AIew와 Azure VM 비용 문제
+
+AIew는 AI 기반 실시간 면접 연습 서비스인데, FER(Facial Expression Recognition) 같은 로컬 AI 모델을 사용하고 있다. 이미지 빌드 최적화를 해도 ai-server의 컨테이너만 10GB가 넘어간다.
+
+처음에는 Azure 학생 인증으로 $100 크레딧을 받아서 부담 없이 사용했는데, 2달 만에 전부 소진됐다. 이후로는 월 6~7만원을 내야 하는 상황.
+
+대안을 찾던 중 OCI Free Tier를 알게 됐다.
+
+<Mermaid chart={`graph TD
+A[Start] --> B{Decision}
+B --> |Yes| C[Do Something]
+B --> |No| D[End]`} />
+
+<Image src="https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2cebdc82-a936-804e-8b53-f19167685081/2d5bdc82-a936-8014-8e5e-c1e0b59ca72e.png" />
+
+<LinkCard url="https://mproject.tistory.com/32" title="OCI CLI 사용방법 및 가상머신 인스턴스 만들기" description="작성자: 정영균OCI 관리 작업은 기본적으로 웹콘솔에서 수행하지만, 명령어 인터페이스(Command Line Interface, CLI)를 이용해서도 할 수 있습니다. OCI CLI를 이용하면 Shell 스크립트, crontab 등을 함께 이용해서 OCI 자원을 자동화하거나, OCI 관리를 정기적인 작업으로 등록할 수 있습니다. 예를 들어 업무 시간 후에는 개발 인스턴스들을 동시에 shutdown 시켰다가 아침에 다시 start 시킨다거나, 결산 등이 이루어지는 월말, 연말에 CPU를 더 할당해서 인스턴스를 확장한다든지 하는 작업에 사용할 수 있습니다. 이번 글에서는 OCI CLI 설치와 사용 방법에 대해서 정리해 보았습니다. 아래 OCI 문서를 참조했습니다. https://docs.cloud.oracl.." image="https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Ft1.daumcdn.net%2Fcfile%2Ftistory%2F99B708435C466F0C36" favicon="https://t1.daumcdn.net/tistory_admin/favicon/tistory_favicon_32x32.ico" />
+
+### OCI Free Tier를 알게 됨
+
+ARM 기반이긴 하지만, 이 스펙이 **영구 무료**라고?
+
+"이거다!" 싶어서 바로 가입했다.
+
+### 그런데...
+
+```text
+Out of capacity for shape VM.Standard.A1.Flex in availability domain AD-1. Create the instance in a different availability domain or try again later.If you specified a fault domain, try creating the instance without specifying a fault domain. If that doesn’t work, please try again later.Learn more about host capacity.
+```
+
+???
+
+---
+
+## OCI Free Tier가 어려운 이유
+
+### 너무 좋아서 문제
+
+위 표를 다시 보면 알겠지만, 이 스펙이 영구 무료인 건 말이 안 된다. 당연히 전 세계에서 몰린다.
+
+### Oracle의 재고 관리 방식
+
+Oracle은 Free Tier 전용 용량을 따로 두지 않는다. 유료 고객과 같은 풀에서 남는 자원을 Free Tier에 할당하는 구조다.
+
+즉:
+
+- 유료 수요가 늘면 → Free Tier 용량 감소
+
+- 누군가 인스턴스 삭제하면 → 그 순간 용량 생김 → 바로 다른 사람이 채감
+
+용량이 생기는 그 순간을 잡아야 한다.
+
+### 결론: 반복 시도가 답
+
+수동으로 새로고침 하면서 기다릴 수는 없다. 자동화 스크립트로 계속 시도하는 수밖에 없다.
+
+---
+
+## 1차 시도: Oracle Cloud Shell
+
+### 접근 방식
+
+OCI에서 제공하는 Cloud Shell에서 스크립트를 작성해서 돌리기로 했다. 별도 인증 설정 없이 바로 OCI CLI를 쓸 수 있어서 편했다.
+
+```bash
+#!/bin/bash
+
+# 설정
+COMPARTMENT_ID="$OCI_TENANCY"
+AD="qibq:AP-CHUNCHEON-1-AD-1"
+SUBNET_ID="ocid1.subnet.oc1.ap-huncheon-1...."
+IMAGE_ID="ocid1.image.oc1.ap-chuncheon-1...."
+SSH_KEY=$(cat ~/.ssh/id_rsa.pub)
+SHAPE="VM.Standard.A1.Flex"
+OCPUS=4
+MEMORY_GB=24
+BOOT_VOLUME_GB=100
+
+COUNT=0
+
+while true; do
+    COUNT=$((COUNT + 1))
+    echo "$(date): 시도 #$COUNT"
+
+    RESULT=$(oci compute instance launch \
+        --compartment-id "$COMPARTMENT_ID" \
+        --availability-domain "$AD" \
+        --shape "$SHAPE" \
+        --shape-config "{\"ocpus\": $OCPUS, \"memoryInGBs\": $MEMORY_GB}" \
+        --subnet-id "$SUBNET_ID" \
+        --image-id "$IMAGE_ID" \
+        --assign-public-ip true \
+        --boot-volume-size-in-gbs $BOOT_VOLUME_GB \
+        --ssh-authorized-keys-file ~/.ssh/id_rsa.pub \
+        --display-name "AIew-instance" \
+        2>&1)
+
+    if echo "$RESULT" | grep -q "ocid1.instance"; then
+        echo "========================================"
+        echo "성공! 인스턴스가 생성되었습니다!"
+        echo "========================================"
+        echo "$RESULT"
+        break
+    else
+        echo "실패: Out of capacity. 60초 후 재시도..."
+        sleep 60
+    fi
+done
+```
+
+1분마다 인스턴스 생성을 시도하는 간단한 스크립트다.
+
+### 문제 발생
+
+그런데 Cloud Shell에는 치명적인 문제가 있었다.
+
+- 비활성 20분이면 세션 타임아웃
+
+- 최대 세션 시간도 ~1시간 정도
+
+- 로그아웃되면 스크립트도 같이 종료
+
+밤새 돌려놔야 하는데, 지속 가능한 방식이 아니었다.
+
+---
+
+## 2차 시도: GitHub Actions
+
+### 왜 GitHub Actions?
+
+- 무료
+
+- 서버 관리 불필요
+
+- cron 스케줄 지원
+
+외부 서버에서 돌리려면 OCI API Key 설정이 필요한데, GitHub Actions면 Secrets에 넣어두고 쓰면 되니까 깔끔할 것 같았다.
+
+### 구현
+
+API Key 발급받고, GitHub Secrets에 등록하고, 5분마다 실행되는 워크플로우를 만들었다.
+
+```yaml
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  create-instance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup OCI Config
+        run: |
+          mkdir -p ~/.oci
+          # config 설정...
+
+      - name: Try to Launch Instance
+        run: |
+          oci compute instance launch \\
+            --compartment-id "${{ secrets.OCI_TENANCY }}" \\
+            # ...
+```
+
+### 삽질: Subnet OCID 오타
+
+처음 실행했는데 `NotAuthorizedOrNotFound` 에러가 났다.
+
+디버깅해보니 Subnet에 접근을 못하고 있었다. 원인은 허무하게도 **오타**였다.
+
+```text
+ocid1.subnet.oc1.ap-huncheon-1.aaaa...
+                   ^^^^^^^^
+                   c가 빠짐
+```
+
+`ap-chuncheon-1`인데 `ap-huncheon-1`로 되어있었다. 처음 Cloud Shell에서 스크립트 짤 때 오타가 났던 것.
+
+**교훈: OCID는 반드시 콘솔에서 직접 복사하자.**
+
+### 새로운 문제 발견
+
+오타 수정하고 나니 정상적으로 `Out of host capacity` 에러가 오기 시작했다. (이게 정상이다 🙃)
+
+그런데 며칠 돌려보니 GitHub Actions cron의 한계가 보였다.
+
+- **cron 최소 간격이 5분**: 경쟁이 치열한 상황에서 불리
+
+- **실행 지연/누락 빈번**: 실제로는 7분~30분에 한 번 실행되기도 함
+
+- 사용량 많은 시간대에는 아예 스킵되는 경우도 있음
+
+용량이 생기는 그 순간을 잡아야 하는데, 이 간격으로는 현실적으로 어렵겠다는 판단이 들었다.
+
+---
+
+## 3차 시도: Azure VM에서 크론잡
+
+### 발상의 전환
+
+잠깐, 어차피 Azure VM이 돌아가고 있잖아?
+
+- 크론잡은 리소스 거의 안 먹음
+
+- 1분 간격으로 안정적으로 실행 가능
+
+- GitHub Actions에서 쓰던 설정값 그대로 활용 가능
+
+OCI로 마이그레이션하려고 시작한 건데, 결국 Azure VM에서 OCI 인스턴스 확보 스크립트를 돌리게 됐다. 🤡
+
+### 구현
+
+Azure VM에 OCI CLI 설치하고, config 설정하고, 스크립트 만들어서 크론잡 등록했다.
+
+```bash
+# OCI CLI 설치
+bash -c "$(curl -L <https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh>)" -- --accept-all-defaults
+
+# 크론잡 등록 (2분마다)
+crontab -e
+*/2 * * * * PATH=$HOME/bin:$PATH ~/oci-create.sh
+```
+
+성공하면 Discord로 알림 오게 해뒀다.
+
+```bash
+# 성공 시 Discord 알림
+curl -H "Content-Type: application/json" \\
+    -d '{"content":"🎉 OCI 인스턴스 생성 성공!"}' \\
+    "$DISCORD_WEBHOOK"
+```
+
+### 결과: 크리스마스 선물 🎄
+
+```text
+Thu Dec 25 05:04:40 UTC 2025: Attempting to create instance...
+Thu Dec 25 05:04:42 UTC 2025: SUCCESS!
+```
+
+**12월 25일 오후 2시 4분 (KST)**, 크리스마스 당일에 Discord 알림이 울렸다.
+
+<Image src="https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2cebdc82-a936-804e-8b53-f19167685081/2d4bdc82-a936-80c8-862c-dea30bb52938.png" />
+
+약 일주일간의 시도 끝에 드디어 인스턴스 확보에 성공했다.
+
+재밌는 건, Pay as you go로 업그레이드 신청해놓고 아직 적용되기 전에 잡혔다는 점이다. 
+
+업그레이드가 확보 확률을 높여준다는 얘기가 있어서 신청했는데, 결국 타이밍의 영역인 것 같다.
+
+---
+
+## 정리
+
+### 시도한 방법들
+
+| 방법 | 실행 간격 | 결과 |
+| --- | --- | --- |
+| Cloud Shell | 1분 | ❌ 세션 타임아웃 |
+| GitHub Actions | 5분+ (불안정) | ❌ 간격 너무 김 |
+| Azure VM 크론잡 | 2분 (안정) | ✅ **성공** |
+
+### 소요 시간
+
+- 시작: 12월 18일
+
+- 성공: 12월 25일 (크리스마스!)
+
+- **총 약 7일 소요**
+
+### 배운 점
+
+- OCI Free Tier는 좋지만 인내가 필요하다
+
+- 자동화할 때는 안정적인 실행 환경이 중요하다
+
+- OCID 복사할 때 오타 조심 (진심)
+
+- OCI 마이그레이션하려고 Azure VM 크론잡 돌리는 아이러니
+
+- **결국은 타이밍과 운의 영역**
+
+### OCI 인스턴스를 노린다면?
+
+- 자동화는 필수
+
+- 실행 간격은 짧을수록 유리 (GitHub Actions 비추)
+
+- Pay as you go 업그레이드 추천 (우선순위 높아진다는 얘기 있음)
+
+- 포기하지 말 것 - 언젠간 잡힌다
+
+스크립트는 여기에 올려뒀다: https://github.com/nahyeongjin1/oci-instance-creator
