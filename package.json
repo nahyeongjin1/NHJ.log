@@ -20,6 +20,7 @@
     "@mdx-js/rollup": "^3.1.1",
     "@notionhq/client": "^5.4.0",
     "@react-router/node": "^7.11.0",
+    "@tailwindcss/typography": "^0.5.19",
     "cheerio": "^1.1.2",
     "isbot": "^5.1.27",
     "lucide-react": "^0.556.0",
