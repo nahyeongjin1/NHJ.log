@@ -52,7 +52,7 @@ const InnerLayout = ({ children }: { children: React.ReactNode }) => {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
-        <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} />
+        <PreventFlashOnWrongTheme ssrTheme={Boolean(data?.theme)} />
         <Links />
       </head>
       <body>
@@ -69,7 +69,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   const data = useLoaderData<typeof loader>();
 
   return (
-    <ThemeProvider specifiedTheme={data.theme} themeAction="/action/set-theme">
+    <ThemeProvider specifiedTheme={data?.theme} themeAction="/action/set-theme">
       <InnerLayout>{children}</InnerLayout>
     </ThemeProvider>
   );
