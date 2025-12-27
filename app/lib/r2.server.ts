@@ -2,6 +2,7 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  HeadObjectCommand,
 } from '@aws-sdk/client-s3';
 
 // R2 Client
@@ -95,6 +96,7 @@ interface UploadOptions {
   pageId: string;
   blockId: string;
   extension?: string;
+  skipIfExists?: boolean;
 }
 
 interface UploadResult {
@@ -148,6 +150,25 @@ export async function uploadFromUrl(
   options: UploadOptions
 ): Promise<UploadResult> {
   const extension = options.extension || getExtensionFromUrl(sourceUrl);
+  const { contentType, pageId, blockId, skipIfExists } = options;
+  const fileType = getFileType(extension);
+  const key = generateKey(fileType, contentType, pageId, blockId, extension);
+
+  // skipIfExists: 이미 존재하면 스킵
+  if (skipIfExists) {
+    try {
+      await r2Client.send(
+        new HeadObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: key,
+        })
+      );
+      // 존재하면 URL만 반환
+      return { key, url: `${PUBLIC_URL}/${key}` };
+    } catch {
+      // 존재하지 않으면 계속 진행
+    }
+  }
 
   // 파일 다운로드
   const response = await fetch(sourceUrl);

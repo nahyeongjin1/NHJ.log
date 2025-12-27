@@ -1,6 +1,15 @@
 import { Client } from '@notionhq/client';
-import type { PageObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+import type {
+  PageObjectResponse,
+  BlockObjectResponse,
+} from '@notionhq/client/build/src/api-endpoints';
 import type { Post, Project, Bookmark } from '~/types/post';
+
+// 블록 + children 트리 구조
+export interface BlockWithChildren {
+  block: BlockObjectResponse;
+  children: BlockWithChildren[];
+}
 
 // Notion 클라이언트 초기화
 const notion = new Client({
@@ -74,6 +83,23 @@ function getUrlProperty(
   return undefined;
 }
 
+function getFilesProperty(
+  page: PageObjectResponse,
+  propertyName: string
+): string | undefined {
+  const property = page.properties[propertyName];
+  if (property?.type === 'files' && property.files.length > 0) {
+    const file = property.files[0];
+    if (file.type === 'file') {
+      return file.file.url;
+    }
+    if (file.type === 'external') {
+      return file.external.url;
+    }
+  }
+  return undefined;
+}
+
 function getDateProperty(
   page: PageObjectResponse,
   propertyName: string
@@ -120,7 +146,7 @@ function parsePost(page: PageObjectResponse): Post {
     slug: getTextProperty(page, 'slug'),
     excerpt: getTextProperty(page, 'excerpt'),
     tags: getMultiSelectProperty(page, 'tags'),
-    thumbnail: getUrlProperty(page, 'thumbnail'),
+    thumbnail: getFilesProperty(page, 'thumbnail'),
     published: getCheckboxProperty(page, 'published'),
     createdAt: getCreatedTime(page),
     updatedAt: getUpdatedTime(page),
@@ -183,7 +209,7 @@ function parseProject(page: PageObjectResponse): Project {
     techStack: getMultiSelectProperty(page, 'techStack'),
     github: getUrlProperty(page, 'github'),
     demo: getUrlProperty(page, 'demo'),
-    thumbnail: getUrlProperty(page, 'thumbnail'),
+    thumbnail: getFilesProperty(page, 'thumbnail'),
     published: getCheckboxProperty(page, 'published'),
     createdAt: getCreatedTime(page),
     updatedAt: getUpdatedTime(page),
@@ -260,4 +286,59 @@ export async function getBookmarks(options?: {
   return response.results
     .filter((page): page is PageObjectResponse => 'properties' in page)
     .map(parseBookmark);
+}
+
+/**
+ * Blocks APIs
+ */
+
+async function fetchBlockChildren(
+  blockId: string
+): Promise<BlockObjectResponse[]> {
+  const blocks: BlockObjectResponse[] = [];
+  let cursor: string | undefined;
+
+  // 페이지네이션 처리 (100개 제한)
+  do {
+    const response = await notion.blocks.children.list({
+      block_id: blockId,
+      start_cursor: cursor,
+      page_size: 100,
+    });
+
+    const validBlocks = response.results.filter(
+      (block): block is BlockObjectResponse => 'type' in block
+    );
+    blocks.push(...validBlocks);
+
+    cursor = response.has_more
+      ? (response.next_cursor ?? undefined)
+      : undefined;
+  } while (cursor);
+
+  return blocks;
+}
+
+async function fetchBlocksRecursive(
+  blockId: string
+): Promise<BlockWithChildren[]> {
+  const blocks = await fetchBlockChildren(blockId);
+
+  const blocksWithChildren: BlockWithChildren[] = await Promise.all(
+    blocks.map(async (block) => {
+      const children = block.has_children
+        ? await fetchBlocksRecursive(block.id)
+        : [];
+
+      return { block, children };
+    })
+  );
+
+  return blocksWithChildren;
+}
+
+export async function getPageBlocks(
+  pageId: string
+): Promise<BlockWithChildren[]> {
+  return fetchBlocksRecursive(pageId);
 }

@@ -113,4 +113,21 @@
   .caption {
     @apply font-normal text-xs leading-4;
   }
+
+  /* Code Block Styles (rehype-pretty-code) */
+  pre {
+    @apply font-mono text-sm p-4 rounded-lg overflow-x-auto;
+  }
+
+  pre > code {
+    @apply font-mono;
+    font-feature-settings:
+      'liga' 1,
+      'calt' 1; /* Fira Code ligatures */
+  }
+
+  /* Inline code */
+  :not(pre) > code {
+    @apply font-mono text-sm bg-secondary px-1.5 py-0.5 rounded;
+  }
 }
