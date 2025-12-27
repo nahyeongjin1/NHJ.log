@@ -131,3 +131,24 @@
     @apply font-mono text-sm bg-secondary px-1.5 py-0.5 rounded;
   }
 }
+
+/* Prose (Typography) - CSS 변수 기반 색상 */
+/* @layer base 밖에 위치해야 Tailwind Typography 기본값을 덮어씀 */
+.prose {
+  --tw-prose-body: var(--text-primary);
+  --tw-prose-headings: var(--text-primary);
+  --tw-prose-lead: var(--text-secondary);
+  --tw-prose-links: var(--text-primary);
+  --tw-prose-bold: var(--text-primary);
+  --tw-prose-counters: var(--text-secondary);
+  --tw-prose-bullets: var(--text-tertiary);
+  --tw-prose-hr: var(--border-strong);
+  --tw-prose-quotes: var(--text-primary);
+  --tw-prose-quote-borders: var(--border-strong);
+  --tw-prose-captions: var(--text-secondary);
+  --tw-prose-code: var(--text-primary);
+  --tw-prose-pre-code: var(--text-primary);
+  --tw-prose-pre-bg: var(--bg-secondary);
+  --tw-prose-th-borders: var(--border-strong);
+  --tw-prose-td-borders: var(--border-default);
+}
