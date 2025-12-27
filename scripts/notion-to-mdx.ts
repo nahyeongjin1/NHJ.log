@@ -395,10 +395,47 @@ function convertBlock(
       return `{/* Image not found: ${block.id} */}`;
     }
 
-    // TODO: 추후 구현
-    case 'table':
+    case 'table': {
+      if (children.length === 0) {
+        return '{/* Empty table */}';
+      }
+
+      const rows: string[][] = [];
+      for (const { block: rowBlock } of children) {
+        if (rowBlock.type === 'table_row') {
+          const cells = rowBlock.table_row.cells.map((cell) =>
+            convertRichText(cell).replace(/\|/g, '\\|').replace(/\n/g, ' ')
+          );
+          rows.push(cells);
+        }
+      }
+
+      if (rows.length === 0) {
+        return '{/* Empty table */}';
+      }
+
+      // const hasColumnHeader = block.table.has_column_header;
+      const lines: string[] = [];
+
+      // 첫 번째 행 (헤더 또는 일반 행)
+      const headerRow = rows[0];
+      lines.push(`| ${headerRow.join(' | ')} |`);
+
+      // 구분선
+      const separator = headerRow.map(() => '---').join(' | ');
+      lines.push(`| ${separator} |`);
+
+      // 나머지 행들
+      for (const row of rows.slice(1)) {
+        lines.push(`| ${row.join(' | ')} |`);
+      }
+
+      return lines.join('\n');
+    }
+
     case 'table_row':
-      return `{/* TODO: ${block.type} */}`;
+      // table_row는 table 케이스에서 처리됨
+      return null;
 
     default:
       // 지원하지 않는 블록은 주석으로
