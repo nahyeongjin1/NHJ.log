@@ -13,7 +13,7 @@ export function Header() {
   };
 
   return (
-    <header className="bg-primary border-b border-strong">
+    <header className="sticky top-0 z-50 bg-primary border-b border-strong">
       <div className="max-w-[1260px] mx-auto px-10 h-16 flex items-center justify-between">
         {/* 로고 */}
         <Link to="/" className="text-heading-3 text-primary">

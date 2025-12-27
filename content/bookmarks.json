@@ -1,0 +1,24 @@
+[
+  {
+    "id": "2d0bdc82-a936-8083-b374-eb79b8939449",
+    "title": "Fastify TS 문서",
+    "url": "https://fastify.dev/docs/latest/Reference/TypeScript/#typescript",
+    "category": "프레임워크 공식 문서",
+    "tags": ["Fastify", "Node.js", "Typescript"],
+    "description": "Fastify의 타입스크립트 사용시 참고할 내용이 밀집된 문서",
+    "published": true,
+    "createdAt": "2025-12-21T11:44:00.000Z",
+    "updatedAt": "2025-12-21T11:46:00.000Z"
+  },
+  {
+    "id": "2bebdc82-a936-80bb-b33e-e312f5eb4ae6",
+    "title": "아무거나",
+    "url": "https://example.com",
+    "category": "Documentation",
+    "tags": ["태그들"],
+    "description": "",
+    "published": true,
+    "createdAt": "2025-12-03T07:29:00.000Z",
+    "updatedAt": "2025-12-03T07:30:00.000Z"
+  }
+]

@@ -1,8 +1,10 @@
 import { type RouteConfig, index, route } from '@react-router/dev/routes';
+import { routes as mdxRoutes } from 'react-router-mdx/server';
 
 export default [
   index('routes/home.tsx'),
   route('posts', 'routes/posts.tsx'),
+  ...mdxRoutes('routes/posts.$slug.tsx'),
   route('projects', 'routes/projects.tsx'),
   route('bookmarks', 'routes/bookmarks.tsx'),
   route('about', 'routes/about.tsx'),
