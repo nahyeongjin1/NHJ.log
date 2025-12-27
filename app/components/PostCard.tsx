@@ -20,7 +20,7 @@ export function PostCard({ post, thumbnailUrl }: PostCardProps) {
 
   return (
     <Link
-      to={`/blog/${post.slug}`}
+      to={`/posts/${post.slug}`}
       className="bg-secondary border border-default rounded-2xl p-4 flex flex-col gap-4 hover:border-strong transition-colors h-full"
     >
       {/* 썸네일 이미지 */}
