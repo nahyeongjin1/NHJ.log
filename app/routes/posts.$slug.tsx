@@ -14,6 +14,7 @@ import { LinkCard } from '~/components/mdx/LinkCard';
 import { Embed } from '~/components/mdx/Embed';
 import { Text } from '~/components/mdx/Text';
 import { Mermaid } from '~/components/mdx/Mermaid';
+import { CodeBlock } from '~/components/mdx/CodeBlock';
 
 const components = {
   Callout,
@@ -23,6 +24,7 @@ const components = {
   Embed,
   Text,
   Mermaid,
+  pre: CodeBlock,
 };
 
 interface PostAttributes {
