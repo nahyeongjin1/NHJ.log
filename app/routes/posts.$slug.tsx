@@ -1,5 +1,6 @@
 import { useMdxComponent, useMdxAttributes } from 'react-router-mdx/client';
 import { loadMdx } from 'react-router-mdx/server';
+import rehypePrettyCode from 'rehype-pretty-code';
 import type { Route } from './+types/posts.$slug';
 import { PageLayout } from '~/components/PageLayout';
 import { siteConfig } from '~/config/site';
@@ -49,7 +50,17 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  return loadMdx(request);
+  return loadMdx(request, {
+    rehypePlugins: [
+      [
+        rehypePrettyCode,
+        {
+          theme: 'plastic',
+          keepBackground: true,
+        },
+      ],
+    ],
+  });
 }
 
 function formatDate(dateString: string): string {

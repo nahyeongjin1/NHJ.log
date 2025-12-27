@@ -5,8 +5,6 @@ import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import netlifyReactRouter from '@netlify/vite-plugin-react-router';
 import netlify from '@netlify/vite-plugin';
-import mdx from '@mdx-js/rollup';
-import rehypePrettyCode from 'rehype-pretty-code';
 
 export default defineConfig({
   css: {
@@ -14,21 +12,5 @@ export default defineConfig({
       plugins: [tailwindcss, autoprefixer],
     },
   },
-  plugins: [
-    mdx({
-      rehypePlugins: [
-        [
-          rehypePrettyCode,
-          {
-            theme: 'plastic',
-            keepBackground: true,
-          },
-        ],
-      ],
-    }),
-    reactRouter(),
-    tsconfigPaths(),
-    netlifyReactRouter(),
-    netlify(),
-  ],
+  plugins: [reactRouter(), tsconfigPaths(), netlifyReactRouter(), netlify()],
 });
