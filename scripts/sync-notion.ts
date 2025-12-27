@@ -86,6 +86,16 @@ async function saveJson<T>(filename: string, data: T): Promise<void> {
   console.log(`   ✓ ${filename}`);
 }
 
+// MDX 파일 상단에 추가할 import 문
+const MDX_IMPORTS = `import { Callout } from '~/components/mdx/Callout';
+import { Toggle } from '~/components/mdx/Toggle';
+import { Image } from '~/components/mdx/Image';
+import { LinkCard } from '~/components/mdx/LinkCard';
+import { Embed } from '~/components/mdx/Embed';
+import { Text } from '~/components/mdx/Text';
+import { Mermaid } from '~/components/mdx/Mermaid';
+`;
+
 /**
  * MDX 파일 저장
  */
@@ -98,7 +108,8 @@ async function saveMdx(
   await fs.mkdir(dir, { recursive: true });
 
   const filepath = path.join(dir, `${slug}.mdx`);
-  await fs.writeFile(filepath, content, 'utf-8');
+  const mdxContent = `${MDX_IMPORTS}\n${content}`;
+  await fs.writeFile(filepath, mdxContent, 'utf-8');
 }
 
 async function main() {
