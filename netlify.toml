@@ -2,5 +2,8 @@
 command = "react-router build"
 publish = "build/client"
 
+[functions]
+included_files = ["content/**/*"]
+
 [dev]
 command = "react-router dev"
