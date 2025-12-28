@@ -21,6 +21,16 @@ import { Footer } from './components/Footer';
 import { themeSessionResolver } from './sessions.server';
 
 export const links: Route.LinksFunction = () => [
+  {
+    rel: 'icon',
+    href: '/favicon-96x96.png',
+    type: 'image/png',
+    sizes: '96x96',
+  },
+  { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
+  { rel: 'shortcut icon', href: '/favicon.ico' },
+  { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
+  { rel: 'manifest', href: '/site.webmanifest' },
   { rel: 'preconnect', href: 'https://cdn.jsdelivr.net' },
   {
     rel: 'stylesheet',
@@ -51,6 +61,7 @@ const InnerLayout = ({ children }: { children: React.ReactNode }) => {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="apple-mobile-web-app-title" content="NHJ.log" />
         <Meta />
         <PreventFlashOnWrongTheme ssrTheme={Boolean(data?.theme)} />
         <Links />
