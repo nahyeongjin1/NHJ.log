@@ -2,7 +2,7 @@
 title: "OCI Free Tier 인스턴스 확보 삽질기"
 excerpt: "AI 서버의 도커 이미지 크기가 너무 커져 Azure VM에서 OCI instance로 마이그레이션 하기 위한 여정"
 createdAt: "2025-12-19T09:14:00.000Z"
-updatedAt: "2025-12-27T09:03:00.000Z"
+updatedAt: "2025-12-28T06:43:00.000Z"
 tags: ["Infra", "Script", "Cron Job", "GIthub Actions"]
 thumbnail: "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2cebdc82-a936-804e-8b53-f19167685081/thumbnail.png"
 ---
@@ -29,15 +29,6 @@ AIew는 AI 기반 실시간 면접 연습 서비스인데, FER(Facial Expression
 
 대안을 찾던 중 OCI Free Tier를 알게 됐다.
 
-<Mermaid chart={`graph TD
-A[Start] --> B{Decision}
-B --> |Yes| C[Do Something]
-B --> |No| D[End]`} />
-
-<Image src="https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2cebdc82-a936-804e-8b53-f19167685081/2d5bdc82-a936-8014-8e5e-c1e0b59ca72e.png" />
-
-<LinkCard url="https://mproject.tistory.com/32" title="OCI CLI 사용방법 및 가상머신 인스턴스 만들기" description="작성자: 정영균OCI 관리 작업은 기본적으로 웹콘솔에서 수행하지만, 명령어 인터페이스(Command Line Interface, CLI)를 이용해서도 할 수 있습니다. OCI CLI를 이용하면 Shell 스크립트, crontab 등을 함께 이용해서 OCI 자원을 자동화하거나, OCI 관리를 정기적인 작업으로 등록할 수 있습니다. 예를 들어 업무 시간 후에는 개발 인스턴스들을 동시에 shutdown 시켰다가 아침에 다시 start 시킨다거나, 결산 등이 이루어지는 월말, 연말에 CPU를 더 할당해서 인스턴스를 확장한다든지 하는 작업에 사용할 수 있습니다. 이번 글에서는 OCI CLI 설치와 사용 방법에 대해서 정리해 보았습니다. 아래 OCI 문서를 참조했습니다. https://docs.cloud.oracl.." image="https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Ft1.daumcdn.net%2Fcfile%2Ftistory%2F99B708435C466F0C36" favicon="https://t1.daumcdn.net/tistory_admin/favicon/tistory_favicon_32x32.ico" />
-
 ### OCI Free Tier를 알게 됨
 
 ARM 기반이긴 하지만, 이 스펙이 **영구 무료**라고?
@@ -62,7 +53,9 @@ Out of capacity for shape VM.Standard.A1.Flex in availability domain AD-1. Creat
 
 ### Oracle의 재고 관리 방식
 
-Oracle은 Free Tier 전용 용량을 따로 두지 않는다. 유료 고객과 같은 풀에서 남는 자원을 Free Tier에 할당하는 구조다.
+Oracle은 Free Tier 전용 용량을 따로 두지 않는다. 
+
+유료 고객과 같은 풀에서 남는 자원을 Free Tier에 할당하는 구조다.
 
 즉:
 
@@ -72,9 +65,13 @@ Oracle은 Free Tier 전용 용량을 따로 두지 않는다. 유료 고객과 �
 
 용량이 생기는 그 순간을 잡아야 한다.
 
+<LinkCard url="https://mproject.tistory.com/32" title="OCI CLI 사용방법 및 가상머신 인스턴스 만들기" description="작성자: 정영균OCI 관리 작업은 기본적으로 웹콘솔에서 수행하지만, 명령어 인터페이스(Command Line Interface, CLI)를 이용해서도 할 수 있습니다. OCI CLI를 이용하면 Shell 스크립트, crontab 등을 함께 이용해서 OCI 자원을 자동화하거나, OCI 관리를 정기적인 작업으로 등록할 수 있습니다. 예를 들어 업무 시간 후에는 개발 인스턴스들을 동시에 shutdown 시켰다가 아침에 다시 start 시킨다거나, 결산 등이 이루어지는 월말, 연말에 CPU를 더 할당해서 인스턴스를 확장한다든지 하는 작업에 사용할 수 있습니다. 이번 글에서는 OCI CLI 설치와 사용 방법에 대해서 정리해 보았습니다. 아래 OCI 문서를 참조했습니다. https://docs.cloud.oracl.." image="https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Ft1.daumcdn.net%2Fcfile%2Ftistory%2F99B708435C466F0C36" favicon="https://t1.daumcdn.net/tistory_admin/favicon/tistory_favicon_32x32.ico" />
+
 ### 결론: 반복 시도가 답
 
-수동으로 새로고침 하면서 기다릴 수는 없다. 자동화 스크립트로 계속 시도하는 수밖에 없다.
+수동으로 새로고침 하면서 기다릴 수는 없다. 
+
+자동화 스크립트로 계속 시도하는 수밖에 없다.
 
 ---
 
@@ -82,7 +79,9 @@ Oracle은 Free Tier 전용 용량을 따로 두지 않는다. 유료 고객과 �
 
 ### 접근 방식
 
-OCI에서 제공하는 Cloud Shell에서 스크립트를 작성해서 돌리기로 했다. 별도 인증 설정 없이 바로 OCI CLI를 쓸 수 있어서 편했다.
+OCI에서 제공하는 Cloud Shell에서 스크립트를 작성해서 돌리기로 했다. 
+
+별도 인증 설정 없이 바로 OCI CLI를 쓸 수 있어서 편했다.
 
 ```bash
 #!/bin/bash
@@ -188,7 +187,9 @@ jobs:
 
 처음 실행했는데 `NotAuthorizedOrNotFound` 에러가 났다.
 
-디버깅해보니 Subnet에 접근을 못하고 있었다. 원인은 허무하게도 **오타**였다.
+디버깅해보니 Subnet에 접근을 못하고 있었다. 
+
+원인은 허무하게도 **오타**였다.
 
 ```text
 ocid1.subnet.oc1.ap-huncheon-1.aaaa...
@@ -196,7 +197,9 @@ ocid1.subnet.oc1.ap-huncheon-1.aaaa...
                    c가 빠짐
 ```
 
-`ap-chuncheon-1`인데 `ap-huncheon-1`로 되어있었다. 처음 Cloud Shell에서 스크립트 짤 때 오타가 났던 것.
+`ap-chuncheon-1`인데 `ap-huncheon-1`로 되어있었다. 
+
+처음 Cloud Shell에서 스크립트 짤 때 오타가 났던 것.
 
 **교훈: OCID는 반드시 콘솔에서 직접 복사하자.**
 

@@ -1,5 +1,47 @@
 [
   {
+    "id": "2d7bdc82-a936-8009-b07b-fec049bf3f87",
+    "title": "NHJ.log",
+    "slug": "personal-tech-blog",
+    "description": "풀스택 프레임워크로 직접 구현해보는 기술 블로그",
+    "period": {
+      "start": "2025-10-04",
+      "end": "2026-01-05"
+    },
+    "roles": ["Frontend", "Backend"],
+    "status": "in-progress",
+    "techStack": [
+      "React Router v7 Framework Mode",
+      "Notion API",
+      "Typescript",
+      "Netlify Function"
+    ],
+    "github": "https://github.com/nahyeongjin1/NHJ.log",
+    "demo": "https://hyeongjin.me",
+    "published": true,
+    "createdAt": "2025-12-28T06:46:00.000Z",
+    "updatedAt": "2025-12-28T06:51:00.000Z",
+    "relatedPosts": []
+  },
+  {
+    "id": "2d3bdc82-a936-80fa-b3df-e618db9dfb3a",
+    "title": "AKLP",
+    "slug": "ai-powered-kubernetes-learning-platform",
+    "description": " AI 기반 쿠버네티스 학습 플랫폼",
+    "period": {
+      "start": "2025-10-23",
+      "end": "2025-12-18"
+    },
+    "roles": ["Backend", "Infra"],
+    "status": "completed",
+    "techStack": ["FastAPI", "K3s", "SQLAlchemy"],
+    "github": "https://github.com/orgs/next-gen-dist-sys/repositories",
+    "published": true,
+    "createdAt": "2025-12-24T07:52:00.000Z",
+    "updatedAt": "2025-12-28T06:56:00.000Z",
+    "relatedPosts": []
+  },
+  {
     "id": "2cebdc82-a936-8005-beca-e1a9eaddbce6",
     "title": "AIew",
     "slug": "ai-interview-practice-service",
@@ -27,24 +69,5 @@
       "2d3bdc82-a936-8034-a801-e9bf4a6b1fa8",
       "2d4bdc82-a936-80a0-b32d-ccd783f2e44e"
     ]
-  },
-  {
-    "id": "2bebdc82-a936-8094-9636-cf6c7e07bdd2",
-    "title": "아무거나",
-    "slug": "test-project",
-    "description": "설명",
-    "period": {
-      "start": "2025-12-01",
-      "end": "2025-12-08"
-    },
-    "roles": ["Backend"],
-    "status": "in-progress",
-    "techStack": ["React", "Typescript"],
-    "github": "https://github.com/nahyeongjin1/NHJ.log",
-    "demo": "https://develop-preview--hyeongjin.netlify.app/",
-    "published": true,
-    "createdAt": "2025-12-03T07:28:00.000Z",
-    "updatedAt": "2025-12-27T08:04:00.000Z",
-    "relatedPosts": []
   }
 ]

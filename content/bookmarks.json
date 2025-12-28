@@ -9,16 +9,5 @@
     "published": true,
     "createdAt": "2025-12-21T11:44:00.000Z",
     "updatedAt": "2025-12-21T11:46:00.000Z"
-  },
-  {
-    "id": "2bebdc82-a936-80bb-b33e-e312f5eb4ae6",
-    "title": "아무거나",
-    "url": "https://example.com",
-    "category": "Documentation",
-    "tags": ["태그들"],
-    "description": "",
-    "published": true,
-    "createdAt": "2025-12-03T07:29:00.000Z",
-    "updatedAt": "2025-12-03T07:30:00.000Z"
   }
 ]

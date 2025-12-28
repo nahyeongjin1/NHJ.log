@@ -1,0 +1,43 @@
+---
+title: "서로 다른 3개의 서비스를 Nginx와 함께 배포하며 생긴 일"
+excerpt: "IaaS에 4개의 컨테이너를 Docker Compose로 배포하며 발생한 일들"
+createdAt: "2025-12-24T07:49:00.000Z"
+updatedAt: "2025-12-28T09:54:00.000Z"
+tags: ["Docker", "Docker Compose", "Env", "Infra", "Nginx", "Node.js", "Python"]
+thumbnail: "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d3bdc82-a936-8034-a801-e9bf4a6b1fa8/thumbnail.png"
+---
+
+## TL;DR
+
+---
+
+<Callout icon="💡">
+1.
+
+2.
+
+3.
+</Callout>
+
+
+
+## 배경
+
+---
+
+
+
+그런 내용도 들어가야됨
+
+SSL 인증서 관리를 원래는 Let’s encrypt로 발급 받아서 certbot으로 갱신하는 크론 잡을 돌렸었는데 SSL 인증서 관리도 cloudflare로 옮겨버림. 사실상 리버스 프록시랑 WAS 보호 정도의 의미만 갖게된 Nginx에 의미를 부여할 수 있는 키가 하나 생김
+
+블루 그린 배포를 하는거임. 서버가 하나니까 docker compose로 컨테이너 4개 돌리고 네트워크 분리 시켜서 쓰고 있었는데 블루 그린 배포 세팅이 안 되어있으니까 컨테이너를 아예 재시작 시키려면 시간도 오래 걸리고 수동으로 작업해야했었음. 그런데 OCI로 마이그레이션 하면서 서버 스펙이 많이 좋아졌고 이에 블루 그린 배포를 도입하기로 함. 
+
+
+
+
+
+## 정리
+
+---
+
