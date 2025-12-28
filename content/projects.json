@@ -36,9 +36,10 @@
     "status": "completed",
     "techStack": ["FastAPI", "K3s", "SQLAlchemy"],
     "github": "https://github.com/orgs/next-gen-dist-sys/repositories",
+    "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/projects/2d3bdc82-a936-80fa-b3df-e618db9dfb3a/thumbnail.png",
     "published": true,
     "createdAt": "2025-12-24T07:52:00.000Z",
-    "updatedAt": "2025-12-28T06:56:00.000Z",
+    "updatedAt": "2025-12-28T11:02:00.000Z",
     "relatedPosts": []
   },
   {
