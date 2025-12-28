@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512"><svg width="512" height="512" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&amp;display=swap');
+    </style>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="6" fill="#1a1a1a" stroke="#404040" stroke-width="2"></rect>
+  <text x="32" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="32" font-weight="700">
+    <tspan fill="#737373">[</tspan><tspan fill="#ffffff">N</tspan><tspan fill="#737373">]</tspan>
+  </text>
+</svg><style>@media (prefers-color-scheme: light) { :root { filter: none; } }
+@media (prefers-color-scheme: dark) { :root { filter: none; } }
+</style></svg>
