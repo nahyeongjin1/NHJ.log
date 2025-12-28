@@ -5,7 +5,7 @@ import { PageLayout } from '~/components/PageLayout';
 import { PageHeader } from '~/components/PageHeader';
 import { CategoryFilter } from '~/components/CategoryFilter';
 import { BookmarkList } from '~/components/BookmarkList';
-import { getBookmarks } from '~/lib/notion.server';
+import { getBookmarks } from '~/lib/content.server';
 import { siteConfig } from '~/config/site';
 
 export function meta(_args: Route.MetaArgs) {

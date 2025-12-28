@@ -3,7 +3,7 @@ import type { Route } from './+types/projects';
 import { PageLayout } from '~/components/PageLayout';
 import { PageHeader } from '~/components/PageHeader';
 import { ProjectCard } from '~/components/ProjectCard';
-import { getProjects, getPosts } from '~/lib/notion.server';
+import { getProjects, getPosts } from '~/lib/content.server';
 import { siteConfig } from '~/config/site';
 
 export function meta(_args: Route.MetaArgs) {

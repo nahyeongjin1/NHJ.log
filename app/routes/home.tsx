@@ -1,10 +1,11 @@
 import { netlifyRouterContext } from '@netlify/vite-plugin-react-router';
+import { data } from 'react-router';
 import type { Route } from './+types/home';
 import { PageLayout } from '~/components/PageLayout';
 import { Hero } from '~/components/Hero';
 import { SectionHeader } from '~/components/SectionHeader';
 import { PostCard } from '~/components/PostCard';
-import { getPublishedPosts } from '~/data/mock-posts';
+import { getPosts, getProjects } from '~/lib/content.server';
 import { siteConfig } from '~/config/site';
 
 export function meta(_args: Route.MetaArgs) {
@@ -42,9 +43,14 @@ export const middleware: Route.MiddlewareFunction[] = [
   logMiddleware,
 ];
 
-export default function Home() {
-  // 최신 포스트 3개 가져오기
-  const featuredPosts = getPublishedPosts().slice(0, 3);
+export function loader() {
+  const posts = getPosts({ limit: 3 });
+  const projects = getProjects({ limit: 2 });
+  return data({ posts, projects });
+}
+
+export default function Home({ loaderData }: Route.ComponentProps) {
+  const { posts, projects } = loaderData;
 
   return (
     <PageLayout header={<Hero />} isHero>
@@ -56,8 +62,8 @@ export default function Home() {
           linkHref="/posts"
         />
         <div className="grid grid-cols-3 gap-6 mt-12">
-          {featuredPosts.map((post) => (
-            <PostCard key={post.id} post={post} />
+          {posts.map((post) => (
+            <PostCard key={post.id} post={post} thumbnailUrl={post.thumbnail} />
           ))}
         </div>
       </div>
@@ -70,18 +76,19 @@ export default function Home() {
           linkHref="/projects"
         />
         <div className="grid grid-cols-2 gap-6 mt-12">
-          <div className="h-[434px] bg-secondary rounded-2xl border border-default flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-body text-tertiary">E-Commerce Platform</p>
-              <p className="text-label-small text-muted mt-2">Coming Soon</p>
+          {projects.map((project) => (
+            <div
+              key={project.id}
+              className="h-[434px] bg-secondary rounded-2xl border border-default flex items-center justify-center"
+            >
+              <div className="text-center">
+                <p className="text-body text-tertiary">{project.title}</p>
+                <p className="text-label-small text-muted mt-2">
+                  {project.description}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="h-[434px] bg-secondary rounded-2xl border border-default flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-body text-tertiary">Design System</p>
-              <p className="text-label-small text-muted mt-2">Coming Soon</p>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </PageLayout>
