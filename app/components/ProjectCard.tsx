@@ -110,7 +110,7 @@ export function ProjectCard({ project, relatedPosts = [] }: ProjectCardProps) {
               {relatedPosts.map((post) => (
                 <Link
                   key={post.id}
-                  to={`/blog/${post.slug}`}
+                  to={`/posts/${post.slug}`}
                   className="text-label-small text-tertiary hover:text-secondary transition-colors px-2 py-1.5 rounded hover:bg-tertiary truncate"
                 >
                   → {post.title}
