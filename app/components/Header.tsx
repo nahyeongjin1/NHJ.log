@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { useTheme, Theme } from 'remix-themes';
 import { Sun, Moon, User } from 'lucide-react';
 import { siteConfig } from '~/config/site';
@@ -7,9 +7,16 @@ export function Header() {
   // remix-themes의 useTheme 훅 사용
   const [theme, setTheme] = useTheme();
   const isDark = theme === Theme.DARK;
+  const location = useLocation();
 
   const toggleDarkMode = () => {
     setTheme(isDark ? Theme.LIGHT : Theme.DARK);
+  };
+
+  // 현재 경로가 메뉴 경로와 일치하는지 확인 (하위 경로 포함)
+  const isActive = (href: string) => {
+    if (href === '/') return location.pathname === '/';
+    return location.pathname.startsWith(href);
   };
 
   return (
@@ -26,7 +33,11 @@ export function Header() {
             <Link
               key={item.href}
               to={item.href}
-              className="text-label text-secondary hover:text-primary transition-colors"
+              className={`text-label transition-colors ${
+                isActive(item.href)
+                  ? 'text-primary underline underline-offset-4'
+                  : 'text-secondary hover:text-primary'
+              }`}
             >
               {item.name}
             </Link>
