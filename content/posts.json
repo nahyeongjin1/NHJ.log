@@ -1,5 +1,17 @@
 [
   {
+    "id": "2d8bdc82-a936-80d5-a9ea-cd644158618f",
+    "title": "React Router v7 Pre-render + Netlify 호환 이슈 해결 과정",
+    "slug": "react-router-prerender-netlify-build",
+    "excerpt": "React Router v7의 prerender 기능이 Netlify에서 동작하지 않는 원인을 파악하고 오픈소스에 기여한 경험",
+    "tags": ["React Router v7", "Netlify", "Vite", "Open Source", "SSG"],
+    "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d8bdc82-a936-80d5-a9ea-cd644158618f/thumbnail.png",
+    "published": true,
+    "createdAt": "2025-12-29T03:01:00.000Z",
+    "updatedAt": "2025-12-29T06:34:00.000Z",
+    "relatedProject": "2d7bdc82-a936-8009-b07b-fec049bf3f87"
+  },
+  {
     "id": "2d4bdc82-a936-80a0-b32d-ccd783f2e44e",
     "title": "Docker Compose와 Nginx로 Blue-Green Deployment 구현",
     "slug": "docker-compose-nginx-blue-green",

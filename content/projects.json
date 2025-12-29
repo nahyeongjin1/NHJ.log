@@ -18,10 +18,14 @@
     ],
     "github": "https://github.com/nahyeongjin1/NHJ.log",
     "demo": "https://hyeongjin.me",
+    "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/projects/2d7bdc82-a936-8009-b07b-fec049bf3f87/thumbnail.png",
     "published": true,
     "createdAt": "2025-12-28T06:46:00.000Z",
-    "updatedAt": "2025-12-28T06:51:00.000Z",
-    "relatedPosts": []
+    "updatedAt": "2025-12-29T06:28:00.000Z",
+    "relatedPosts": [
+      "2d8bdc82-a936-8010-bca7-daa57a635fd2",
+      "2d8bdc82-a936-80d5-a9ea-cd644158618f"
+    ]
   },
   {
     "id": "2d3bdc82-a936-80fa-b3df-e618db9dfb3a",
@@ -39,8 +43,11 @@
     "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/projects/2d3bdc82-a936-80fa-b3df-e618db9dfb3a/thumbnail.png",
     "published": true,
     "createdAt": "2025-12-24T07:52:00.000Z",
-    "updatedAt": "2025-12-28T11:02:00.000Z",
-    "relatedPosts": []
+    "updatedAt": "2025-12-29T03:01:00.000Z",
+    "relatedPosts": [
+      "2d8bdc82-a936-8055-93aa-c9e735e253a3",
+      "2d8bdc82-a936-80e5-988c-d21d6b4c40ed"
+    ]
   },
   {
     "id": "2cebdc82-a936-8005-beca-e1a9eaddbce6",
