@@ -110,7 +110,7 @@ export function ProjectCard({ project, relatedPosts = [] }: ProjectCardProps) {
               {relatedPosts.map((post) => (
                 <Link
                   key={post.id}
-                  to={`/blog/${post.slug}`}
+                  to={`/posts/${post.slug}`}
                   className="text-label-small text-tertiary hover:text-secondary transition-colors px-2 py-1.5 rounded hover:bg-tertiary truncate"
                 >
                   → {post.title}
@@ -121,25 +121,29 @@ export function ProjectCard({ project, relatedPosts = [] }: ProjectCardProps) {
         )}
       </div>
 
-      {/* GitHub/Demo 링크 (둘 다 있을 때) */}
-      {project.github && project.demo && (
+      {/* GitHub/Demo 링크 */}
+      {(project.github || project.demo) && (
         <div className="px-6 pb-6 flex gap-3">
-          <a
-            href={project.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 py-2 px-4 border border-strong rounded-lg text-center text-label-small text-secondary bg-tertiary hover:opacity-90 transition-colors"
-          >
-            GitHub
-          </a>
-          <a
-            href={project.demo}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 py-2 px-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg text-center text-label-small hover:opacity-90 transition-opacity"
-          >
-            Demo
-          </a>
+          {project.github && (
+            <a
+              href={project.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${project.demo ? 'flex-1' : 'w-full'} py-2 px-4 border border-strong rounded-lg text-center text-label-small text-secondary bg-tertiary hover:opacity-90 transition-colors`}
+            >
+              GitHub
+            </a>
+          )}
+          {project.demo && (
+            <a
+              href={project.demo}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${project.github ? 'flex-1' : 'w-full'} py-2 px-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg text-center text-label-small hover:opacity-90 transition-opacity`}
+            >
+              Demo
+            </a>
+          )}
         </div>
       )}
     </div>
