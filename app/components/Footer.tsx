@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer className="bg-primary border-t border-strong">
       <div className="max-w-[1260px] mx-auto px-10 py-12">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between">
           {/* 저작권 */}
           <p className="text-label-small text-tertiary">
             {siteConfig.footer.copyright}
