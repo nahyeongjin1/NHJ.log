@@ -62,7 +62,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           subtitle="최근 작성한 글"
           linkHref="/posts"
         />
-        <div className="grid grid-cols-3 gap-6 mt-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
           {posts.map((post) => (
             <PostCard key={post.id} post={post} thumbnailUrl={post.thumbnail} />
           ))}
@@ -76,7 +76,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           subtitle="선별한 프로젝트"
           linkHref="/projects"
         />
-        <div className="grid grid-cols-2 gap-6 mt-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
           {projects.map((project) => (
             <ProjectCard key={project.id} project={project} />
           ))}

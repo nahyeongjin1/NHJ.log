@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { useTheme, Theme } from 'remix-themes';
-import { Sun, Moon, User } from 'lucide-react';
+import { Sun, Moon, User, Menu, X, LogIn } from 'lucide-react';
 import { siteConfig } from '~/config/site';
 
 export function Header() {
@@ -8,9 +9,18 @@ export function Header() {
   const [theme, setTheme] = useTheme();
   const isDark = theme === Theme.DARK;
   const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleDarkMode = () => {
     setTheme(isDark ? Theme.LIGHT : Theme.DARK);
+  };
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
   };
 
   // 현재 경로가 메뉴 경로와 일치하는지 확인 (하위 경로 포함)
@@ -23,12 +33,16 @@ export function Header() {
     <header className="sticky top-0 z-50 bg-primary border-b border-strong">
       <div className="max-w-[1260px] mx-auto px-10 h-16 flex items-center justify-between">
         {/* 로고 */}
-        <Link to="/" className="text-heading-3 text-primary">
+        <Link
+          to="/"
+          onClick={closeMenu}
+          className="text-heading-3 text-primary"
+        >
           {siteConfig.name}
         </Link>
 
-        {/* 네비게이션 */}
-        <nav className="flex gap-8">
+        {/* 네비게이션 (데스크탑) */}
+        <nav className="hidden md:flex gap-8">
           {siteConfig.navigation.map((item) => (
             <Link
               key={item.href}
@@ -55,13 +69,52 @@ export function Header() {
             {isDark ? <Moon size={20} /> : <Sun size={20} />}
           </button>
 
-          {/* Login 버튼 (UI만) */}
-          <button className="h-10 px-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg text-label flex items-center gap-2 hover:opacity-90 transition-opacity">
+          {/* Login 버튼 (데스크탑) */}
+          <button className="hidden md:flex h-10 px-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg text-label items-center gap-2 hover:opacity-90 transition-opacity">
             <User size={18} />
             Login
           </button>
+
+          {/* Login 아이콘 (모바일) */}
+          <button
+            className="md:hidden w-9 h-9 rounded-lg hover:bg-secondary transition-colors flex items-center justify-center text-secondary"
+            aria-label="Login"
+          >
+            <LogIn size={20} />
+          </button>
+
+          {/* 햄버거 메뉴 (모바일) */}
+          <button
+            onClick={toggleMenu}
+            className="md:hidden w-9 h-9 rounded-lg hover:bg-secondary transition-colors flex items-center justify-center text-secondary"
+            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+          >
+            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
       </div>
+
+      {/* 모바일 드롭다운 메뉴 */}
+      {isMenuOpen && (
+        <div className="md:hidden border-t border-strong bg-primary">
+          <nav className="flex flex-col px-10 py-4 gap-4">
+            {siteConfig.navigation.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                onClick={closeMenu}
+                className={`text-label transition-colors bg-secondary px-4 py-3 rounded-lg ${
+                  isActive(item.href)
+                    ? 'text-primary underline underline-offset-4'
+                    : 'text-secondary hover:text-primary'
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

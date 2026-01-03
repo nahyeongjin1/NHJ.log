@@ -47,15 +47,14 @@ export default function PostsPage({ loaderData }: Route.ComponentProps) {
       }
     >
       {filteredPosts.length > 0 ? (
-        <div className="flex flex-wrap justify-center gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPosts.map((post) => (
-            <div key={post.id} className="w-[371px]">
-              <PostCard
-                post={post}
-                thumbnailUrl={post.thumbnail}
-                onTagClick={setSearchQuery}
-              />
-            </div>
+            <PostCard
+              key={post.id}
+              post={post}
+              thumbnailUrl={post.thumbnail}
+              onTagClick={setSearchQuery}
+            />
           ))}
         </div>
       ) : (
