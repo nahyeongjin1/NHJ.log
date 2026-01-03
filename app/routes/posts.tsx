@@ -41,6 +41,7 @@ export default function PostsPage({ loaderData }: Route.ComponentProps) {
           title={siteConfig.pages.posts.title}
           description={siteConfig.pages.posts.description}
           searchPlaceholder="제목, 내용, 태그로 검색..."
+          searchValue={searchQuery}
           onSearch={setSearchQuery}
         />
       }
@@ -49,7 +50,11 @@ export default function PostsPage({ loaderData }: Route.ComponentProps) {
         <div className="flex flex-wrap justify-center gap-6">
           {filteredPosts.map((post) => (
             <div key={post.id} className="w-[371px]">
-              <PostCard post={post} thumbnailUrl={post.thumbnail} />
+              <PostCard
+                post={post}
+                thumbnailUrl={post.thumbnail}
+                onTagClick={setSearchQuery}
+              />
             </div>
           ))}
         </div>

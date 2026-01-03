@@ -4,10 +4,11 @@ import type { Post } from '~/types/post';
 
 interface PostCardProps {
   post: Post;
-  thumbnailUrl?: string; // 나중에 실제 이미지 사용 시
+  thumbnailUrl?: string;
+  onTagClick?: (tag: string) => void;
 }
 
-export function PostCard({ post, thumbnailUrl }: PostCardProps) {
+export function PostCard({ post, thumbnailUrl, onTagClick }: PostCardProps) {
   // 날짜 포맷팅 (ISO 8601 → YYYY.MM.DD)
   const formattedDate = new Date(post.createdAt)
     .toISOString()
@@ -41,21 +42,36 @@ export function PostCard({ post, thumbnailUrl }: PostCardProps) {
       </div>
 
       {/* 콘텐츠 */}
-      <div className="flex flex-col gap-3 h-[168px]">
-        {/* 카테고리 태그 (첫 번째 태그만 표시) */}
-        <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-tertiary self-start">
-          <span className="text-label-small text-secondary">
-            {post.tags[0] || 'General'}
-          </span>
+      <div className="flex flex-col gap-3">
+        {/* 태그 (최대 2개 + 나머지 +N) */}
+        <div className="flex flex-wrap gap-1.5">
+          {post.tags.slice(0, 2).map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                onTagClick?.(tag);
+              }}
+              className="px-2 py-0.5 rounded-full bg-tertiary text-label-small text-secondary hover:bg-strong transition-colors"
+            >
+              {tag}
+            </button>
+          ))}
+          {post.tags.length > 2 && (
+            <span className="px-2 py-0.5 text-label-small text-tertiary">
+              +{post.tags.length - 2}
+            </span>
+          )}
         </div>
 
         {/* 제목 */}
-        <h3 className="text-heading-3 text-primary line-clamp-1">
+        <h3 className="text-heading-3 text-primary line-clamp-2">
           {post.title}
         </h3>
 
         {/* 설명 */}
-        <p className="text-body text-secondary line-clamp-2 flex-1">
+        <p className="text-body text-secondary line-clamp-3 flex-1">
           {post.excerpt}
         </p>
 
