@@ -5,6 +5,7 @@ import { PageLayout } from '~/components/PageLayout';
 import { Hero } from '~/components/Hero';
 import { SectionHeader } from '~/components/SectionHeader';
 import { PostCard } from '~/components/PostCard';
+import { ProjectCard } from '~/components/ProjectCard';
 import { getPosts, getProjects } from '~/lib/content.server';
 import { siteConfig } from '~/config/site';
 
@@ -77,17 +78,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         />
         <div className="grid grid-cols-2 gap-6 mt-12">
           {projects.map((project) => (
-            <div
-              key={project.id}
-              className="h-[434px] bg-secondary rounded-2xl border border-default flex items-center justify-center"
-            >
-              <div className="text-center">
-                <p className="text-body text-tertiary">{project.title}</p>
-                <p className="text-label-small text-muted mt-2">
-                  {project.description}
-                </p>
-              </div>
-            </div>
+            <ProjectCard key={project.id} project={project} />
           ))}
         </div>
       </div>
