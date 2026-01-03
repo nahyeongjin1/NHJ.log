@@ -40,11 +40,13 @@ export default function ProjectsPage({ loaderData }: Route.ComponentProps) {
       }
     >
       {projectsWithPosts.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {projectsWithPosts.map(({ project, relatedPosts }) => (
-            <div key={project.id} className="w-full max-w-[550px]">
-              <ProjectCard project={project} relatedPosts={relatedPosts} />
-            </div>
+            <ProjectCard
+              key={project.id}
+              project={project}
+              relatedPosts={relatedPosts}
+            />
           ))}
         </div>
       ) : (
