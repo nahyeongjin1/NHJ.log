@@ -14,9 +14,10 @@ export function PostCard({ post, thumbnailUrl }: PostCardProps) {
     .slice(0, 10)
     .replace(/-/g, '.');
 
-  // 읽기 시간 추정 (간단히 5분으로 고정)
-  // TODO: content 기반으로 계산
-  const readingTime = '5 min read';
+  // 읽기 시간 (sync-notion에서 계산됨)
+  const readingTime = post.readingTime
+    ? `${post.readingTime} min read`
+    : '1 min read';
 
   return (
     <Link

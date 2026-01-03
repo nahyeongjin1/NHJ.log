@@ -9,6 +9,7 @@ export interface Post {
   createdAt: string; // ISO 8601 format
   updatedAt: string; // ISO 8601 format
   relatedProject?: string; // Project ID (Relation)
+  readingTime?: number; // 예상 읽기 시간 (분)
 }
 
 export interface Project {
