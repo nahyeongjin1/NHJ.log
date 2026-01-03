@@ -1,13 +1,24 @@
 [
   {
+    "id": "2ddbdc82-a936-8000-a1e2-dd399ef7b7eb",
+    "title": "CJS/ESM 패키지 배포 가이드",
+    "url": "https://toss.tech/article/commonjs-esm-exports-field",
+    "category": "Article",
+    "tags": ["CommonJS", "ECMAScript Modules"],
+    "description": "CJS/ESM의 차이와 호환성 문제를 잘 정리한 글",
+    "published": true,
+    "createdAt": "2026-01-03T10:36:00.000Z",
+    "updatedAt": "2026-01-03T10:46:00.000Z"
+  },
+  {
     "id": "2d0bdc82-a936-8083-b374-eb79b8939449",
     "title": "Fastify TS 문서",
     "url": "https://fastify.dev/docs/latest/Reference/TypeScript/#typescript",
-    "category": "프레임워크 공식 문서",
+    "category": "Official Docs",
     "tags": ["Fastify", "Node.js", "Typescript"],
     "description": "Fastify의 타입스크립트 사용시 참고할 내용이 밀집된 문서",
     "published": true,
     "createdAt": "2025-12-21T11:44:00.000Z",
-    "updatedAt": "2025-12-21T11:46:00.000Z"
+    "updatedAt": "2026-01-03T10:38:00.000Z"
   }
 ]
