@@ -13,6 +13,23 @@ import type { Post, Project } from '~/types/post';
 // 출력 디렉토리
 const CONTENT_DIR = path.join(process.cwd(), 'content');
 
+// 읽기 시간 계산 (한글 기준 분당 500자)
+const CHARS_PER_MINUTE = 500;
+
+function calculateReadingTime(content: string): number {
+  // MDX 문법, 코드 블록 등 제거하고 순수 텍스트만 계산
+  const textOnly = content
+    .replace(/```[\s\S]*?```/g, '') // 코드 블록 제거
+    .replace(/`[^`]*`/g, '') // 인라인 코드 제거
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // 링크 텍스트만
+    .replace(/[#*_~>\-|]/g, '') // 마크다운 문법 제거
+    .replace(/<[^>]*>/g, '') // HTML 태그 제거
+    .replace(/\s+/g, ''); // 공백 제거
+
+  const minutes = Math.ceil(textOnly.length / CHARS_PER_MINUTE);
+  return Math.max(1, minutes); // 최소 1분
+}
+
 /**
  * Thumbnail을 R2에 업로드하고 URL 반환
  */
@@ -52,10 +69,15 @@ async function processPost(
     contentType: 'posts',
   });
 
-  // 3. 메타데이터 업데이트
+  // 3. 읽기 시간 계산
+  const readingTime = calculateReadingTime(mdx);
+  console.log(`     └─ Reading time: ${readingTime}분`);
+
+  // 4. 메타데이터 업데이트
   const metadata: Post = {
     ...post,
     thumbnail,
+    readingTime,
   };
 
   return { metadata, mdx };
