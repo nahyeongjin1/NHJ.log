@@ -77,7 +77,7 @@ export function BookmarkItem({ bookmark }: BookmarkItemProps) {
         )}
 
         {/* 하단: 도메인 + 날짜 + 태그 */}
-        <div className="flex items-center justify-between mt-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
           <span className="text-caption text-tertiary">
             {domain} • {formattedDate}
           </span>
