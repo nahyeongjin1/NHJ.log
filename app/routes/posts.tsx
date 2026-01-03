@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { data, isRouteErrorResponse } from 'react-router';
 import type { Route } from './+types/posts';
 import { PageLayout } from '~/components/PageLayout';
@@ -20,6 +21,18 @@ export async function loader() {
 
 export default function PostsPage({ loaderData }: Route.ComponentProps) {
   const { posts } = loaderData;
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // 검색 필터링 (제목, 태그, excerpt)
+  const filteredPosts = posts.filter((post) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      post.title.toLowerCase().includes(query) ||
+      post.excerpt.toLowerCase().includes(query) ||
+      post.tags.some((tag) => tag.toLowerCase().includes(query))
+    );
+  });
 
   return (
     <PageLayout
@@ -27,13 +40,14 @@ export default function PostsPage({ loaderData }: Route.ComponentProps) {
         <PageHeader
           title={siteConfig.pages.posts.title}
           description={siteConfig.pages.posts.description}
-          searchPlaceholder="제목, 내용, 카테고리로 검색..."
+          searchPlaceholder="제목, 내용, 태그로 검색..."
+          onSearch={setSearchQuery}
         />
       }
     >
-      {posts.length > 0 ? (
+      {filteredPosts.length > 0 ? (
         <div className="flex flex-wrap justify-center gap-6">
-          {posts.map((post) => (
+          {filteredPosts.map((post) => (
             <div key={post.id} className="w-[371px]">
               <PostCard post={post} thumbnailUrl={post.thumbnail} />
             </div>
