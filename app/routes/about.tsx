@@ -4,15 +4,14 @@ import { PageLayout } from '~/components/PageLayout';
 import { PageHeader } from '~/components/PageHeader';
 import { SocialLinks } from '~/components/SocialLinks';
 import { siteConfig } from '~/config/site';
+import { generateMeta } from '~/lib/seo';
 
 export function meta(_args: Route.MetaArgs) {
-  return [
-    { title: `${siteConfig.pages.about.title} - ${siteConfig.name}` },
-    {
-      name: 'description',
-      content: siteConfig.pages.about.description,
-    },
-  ];
+  return generateMeta({
+    title: siteConfig.pages.about.title,
+    description: siteConfig.pages.about.description,
+    url: `${siteConfig.url}/about`,
+  });
 }
 
 export default function AboutPage() {

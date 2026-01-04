@@ -5,12 +5,14 @@ import { PageHeader } from '~/components/PageHeader';
 import { ProjectCard } from '~/components/ProjectCard';
 import { getProjects, getPosts } from '~/lib/content.server';
 import { siteConfig } from '~/config/site';
+import { generateMeta } from '~/lib/seo';
 
 export function meta(_args: Route.MetaArgs) {
-  return [
-    { title: `${siteConfig.pages.projects.title} - ${siteConfig.name}` },
-    { name: 'description', content: siteConfig.pages.projects.description },
-  ];
+  return generateMeta({
+    title: siteConfig.pages.projects.title,
+    description: siteConfig.pages.projects.description,
+    url: `${siteConfig.url}/projects`,
+  });
 }
 
 export async function loader() {

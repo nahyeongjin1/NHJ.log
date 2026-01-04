@@ -6,12 +6,14 @@ import { PageHeader } from '~/components/PageHeader';
 import { PostCard } from '~/components/PostCard';
 import { getPosts } from '~/lib/content.server';
 import { siteConfig } from '~/config/site';
+import { generateMeta } from '~/lib/seo';
 
 export function meta(_args: Route.MetaArgs) {
-  return [
-    { title: `${siteConfig.pages.posts.title} - ${siteConfig.name}` },
-    { name: 'description', content: siteConfig.pages.posts.description },
-  ];
+  return generateMeta({
+    title: siteConfig.pages.posts.title,
+    description: siteConfig.pages.posts.description,
+    url: `${siteConfig.url}/posts`,
+  });
 }
 
 export async function loader() {
