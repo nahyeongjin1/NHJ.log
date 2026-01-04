@@ -1,10 +1,10 @@
 ---
-title: "React Router v7 Pre-render + Netlify 호환 이슈 해결 과정"
-excerpt: "React Router v7의 prerender 기능이 Netlify에서 동작하지 않는 원인을 파악하고 오픈소스에 기여한 경험"
-createdAt: "2025-12-29T03:01:00.000Z"
-updatedAt: "2025-12-29T06:34:00.000Z"
-tags: ["React Router v7", "Netlify", "Vite", "Open Source", "SSG"]
-thumbnail: "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d8bdc82-a936-80d5-a9ea-cd644158618f/thumbnail.png"
+title: 'React Router v7 Pre-render + Netlify 호환 이슈 해결 과정'
+excerpt: 'React Router v7의 prerender 기능이 Netlify에서 동작하지 않는 원인을 파악하고 오픈소스에 기여한 경험'
+createdAt: '2025-12-29T03:01:00.000Z'
+updatedAt: '2025-12-29T06:34:00.000Z'
+tags: ['React Router v7', 'Netlify', 'Vite', 'Open Source', 'SSG']
+thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d8bdc82-a936-80d5-a9ea-cd644158618f/thumbnail.png'
 ---
 
 ## TL;DR
@@ -19,8 +19,6 @@ thumbnail: "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d8
 1. 해결: enforce: 'post' 플러그인으로 우회 후, 근본 수정을 위해 Netlify 플러그인에 PR 제출
 </Callout>
 
-
-
 ## 배경: Pre-rendering(SSG)란?
 
 ---
@@ -30,8 +28,6 @@ thumbnail: "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d8
 ```text
 요청 → 이미 생성된 HTML 반환 (SSR 불필요, CDN에서 바로 서빙)
 ```
-
-
 
 ## 문제 분석
 
@@ -56,15 +52,11 @@ prerender는 server-build만 로드 → custom server entry 무시됨!
 
 이로 인해 React Router v7의 `prerender` 기능이 Netlify, Cloudflare, Vercel 등 3rd party 서버리스 플랫폼 플러그인과 호환되지 않음.
 
-
-
 ### 증상
 
 ```text
 [react-router] Server build file not found in manifest
 ```
-
-
 
 ### 원인
 
@@ -82,8 +74,6 @@ config.build.rollupOptions.input = {
 ```
 
 이로 인해 `virtual:react-router/server-build`가 manifest에서 제외됨.
-
-
 
 ## 해결 과정
 
@@ -104,8 +94,6 @@ export default defineConfig(({ isSsrBuild }) => ({
 ```
 
 Netlify 환경에서는 플러그인이 이 설정을 덮어쓰기 때문에 동일한 에러 발생.
-
-
 
 ### 시도 2: enforce: 'post' 플러그인 (성공)
 
@@ -162,8 +150,6 @@ Prerender (html): / -> build/client/index.html
 ✓ built in 292ms
 ```
 
-
-
 ### 시도 3: 근본 해결 - PR 기여
 
 근본적인 해결을 위해 `@netlify/vite-plugin-react-router`에 PR 제출:
@@ -189,8 +175,6 @@ config.build.rollupOptions.input = {
 };
 
 ```
-
-
 
 > 향후 React Router 팀에서 Vite Preview Server 방식으로 공식 지원 예정 ([RFC #14651](https://github.com/remix-run/react-router/discussions/14651))
 
