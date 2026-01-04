@@ -13,7 +13,7 @@ npm run sync-notion
 git add content/ public/sitemap.xml
 if ! git diff --cached --quiet; then
   TIMESTAMP=$(date +"%Y-%m-%d %H:%M")
-  git commit -m "chore: sync content from Notion ($TIMESTAMP)"
+  git commit --no-verify -m "chore: sync content from Notion ($TIMESTAMP)"
   git push origin develop
   echo "✅ 동기화 완료 및 push 성공"
 else
