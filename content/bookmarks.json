@@ -4,7 +4,10 @@
     "title": "CJS/ESM 패키지 배포 가이드",
     "url": "https://toss.tech/article/commonjs-esm-exports-field",
     "category": "Article",
-    "tags": ["CommonJS", "ECMAScript Modules"],
+    "tags": [
+      "CommonJS",
+      "ECMAScript Modules"
+    ],
     "description": "CJS/ESM의 차이와 호환성 문제를 잘 정리한 글",
     "published": true,
     "createdAt": "2026-01-03T10:36:00.000Z",
@@ -15,7 +18,11 @@
     "title": "Fastify TS 문서",
     "url": "https://fastify.dev/docs/latest/Reference/TypeScript/#typescript",
     "category": "Official Docs",
-    "tags": ["Fastify", "Node.js", "Typescript"],
+    "tags": [
+      "Fastify",
+      "Node.js",
+      "Typescript"
+    ],
     "description": "Fastify의 타입스크립트 사용시 참고할 내용이 밀집된 문서",
     "published": true,
     "createdAt": "2025-12-21T11:44:00.000Z",

@@ -4,7 +4,13 @@
     "title": "React Router v7 Pre-render + Netlify 호환 이슈 해결 과정",
     "slug": "react-router-prerender-netlify-build",
     "excerpt": "React Router v7의 prerender 기능이 Netlify에서 동작하지 않는 원인을 파악하고 오픈소스에 기여한 경험",
-    "tags": ["React Router v7", "Netlify", "Vite", "Open Source", "SSG"],
+    "tags": [
+      "React Router v7",
+      "Netlify",
+      "Vite",
+      "Open Source",
+      "SSG"
+    ],
     "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d8bdc82-a936-80d5-a9ea-cd644158618f/thumbnail.png",
     "published": true,
     "createdAt": "2025-12-29T03:01:00.000Z",
@@ -57,7 +63,12 @@
     "title": "OCI Free Tier 인스턴스 확보 삽질기",
     "slug": "oci-free-tier-instance",
     "excerpt": "AI 서버의 도커 이미지 크기가 너무 커져 Azure VM에서 OCI instance로 마이그레이션 하기 위한 여정",
-    "tags": ["Infra", "Script", "Cron Job", "GIthub Actions"],
+    "tags": [
+      "Infra",
+      "Script",
+      "Cron Job",
+      "GIthub Actions"
+    ],
     "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2cebdc82-a936-804e-8b53-f19167685081/thumbnail.png",
     "published": true,
     "createdAt": "2025-12-19T09:14:00.000Z",

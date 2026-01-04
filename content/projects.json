@@ -8,7 +8,10 @@
       "start": "2025-10-04",
       "end": "2026-01-05"
     },
-    "roles": ["Frontend", "Backend"],
+    "roles": [
+      "Frontend",
+      "Backend"
+    ],
     "status": "in-progress",
     "techStack": [
       "React Router v7 Framework Mode",
@@ -36,9 +39,16 @@
       "start": "2025-10-23",
       "end": "2025-12-18"
     },
-    "roles": ["Backend", "Infra"],
+    "roles": [
+      "Backend",
+      "Infra"
+    ],
     "status": "completed",
-    "techStack": ["FastAPI", "K3s", "SQLAlchemy"],
+    "techStack": [
+      "FastAPI",
+      "K3s",
+      "SQLAlchemy"
+    ],
     "github": "https://github.com/orgs/next-gen-dist-sys/repositories",
     "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/projects/2d3bdc82-a936-80fa-b3df-e618db9dfb3a/thumbnail.png",
     "published": true,
@@ -57,7 +67,11 @@
     "period": {
       "start": "2025-03-06"
     },
-    "roles": ["Backend", "Infra", "PM"],
+    "roles": [
+      "Backend",
+      "Infra",
+      "PM"
+    ],
     "status": "maintenance",
     "techStack": [
       "Fastify",
