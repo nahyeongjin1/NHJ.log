@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { useTheme, Theme } from 'remix-themes';
-import { Sun, Moon, User, Menu, X, LogIn } from 'lucide-react';
+import { Sun, Moon, Menu, X } from 'lucide-react';
 import { siteConfig } from '~/config/site';
+import { AuthButton } from './AuthButton';
 
 export function Header() {
   // remix-themes의 useTheme 훅 사용
@@ -69,19 +70,11 @@ export function Header() {
             {isDark ? <Moon size={20} /> : <Sun size={20} />}
           </button>
 
-          {/* Login 버튼 (데스크탑) */}
-          <button className="hidden md:flex h-10 px-4 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg text-label items-center gap-2 hover:opacity-90 transition-opacity">
-            <User size={18} />
-            Login
-          </button>
+          {/* 로그인/프로필 (데스크탑) */}
+          <AuthButton variant="desktop" />
 
-          {/* Login 아이콘 (모바일) */}
-          <button
-            className="md:hidden w-9 h-9 rounded-lg hover:bg-secondary transition-colors flex items-center justify-center text-secondary"
-            aria-label="Login"
-          >
-            <LogIn size={20} />
-          </button>
+          {/* 로그인/프로필 (모바일) */}
+          <AuthButton variant="mobile" />
 
           {/* 햄버거 메뉴 (모바일) */}
           <button
