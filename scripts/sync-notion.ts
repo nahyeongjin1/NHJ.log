@@ -12,6 +12,10 @@ import type { Post, Project } from '~/types/post';
 
 // 출력 디렉토리
 const CONTENT_DIR = path.join(process.cwd(), 'content');
+const PUBLIC_DIR = path.join(process.cwd(), 'public');
+
+// 사이트 URL
+const SITE_URL = 'https://hyeongjin.me';
 
 // 읽기 시간 계산 (한글 기준 분당 500자)
 const CHARS_PER_MINUTE = 500;
@@ -147,6 +151,61 @@ async function saveMdx(
   await fs.writeFile(filepath, mdxContent, 'utf-8');
 }
 
+/**
+ * Sitemap XML 생성
+ */
+function generateSitemap(posts: Post[]): string {
+  const today = new Date().toISOString().split('T')[0];
+
+  // 정적 페이지
+  const staticPages = [
+    { loc: '/', priority: '1.0', changefreq: 'daily' },
+    { loc: '/posts', priority: '0.9', changefreq: 'daily' },
+    { loc: '/projects', priority: '0.8', changefreq: 'weekly' },
+    { loc: '/bookmarks', priority: '0.7', changefreq: 'weekly' },
+    { loc: '/about', priority: '0.6', changefreq: 'monthly' },
+  ];
+
+  const staticEntries = staticPages
+    .map(
+      (page) => `  <url>
+    <loc>${SITE_URL}${page.loc}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>`
+    )
+    .join('\n');
+
+  // 포스트 페이지
+  const postEntries = posts
+    .map(
+      (post) => `  <url>
+    <loc>${SITE_URL}/posts/${post.slug}</loc>
+    <lastmod>${post.updatedAt.split('T')[0]}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>`
+    )
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${staticEntries}
+${postEntries}
+</urlset>`;
+}
+
+/**
+ * Sitemap 저장
+ */
+async function saveSitemap(posts: Post[]): Promise<void> {
+  const sitemap = generateSitemap(posts);
+  const filepath = path.join(PUBLIC_DIR, 'sitemap.xml');
+  await fs.writeFile(filepath, sitemap, 'utf-8');
+  console.log(`   ✓ sitemap.xml (${posts.length + 5} URLs)`);
+}
+
 async function main() {
   console.log('🚀 Starting Notion sync...\n');
 
@@ -189,6 +248,10 @@ async function main() {
   await saveJson('posts.json', processedPosts);
   await saveJson('projects.json', processedProjects);
   await saveJson('bookmarks.json', bookmarks);
+
+  // 5. Sitemap 생성
+  console.log('\n🗺️  Generating sitemap...');
+  await saveSitemap(processedPosts);
 
   console.log('\n✅ Sync complete!');
   console.log(`   - ${processedPosts.length} posts`);
