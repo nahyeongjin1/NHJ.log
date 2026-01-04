@@ -60,17 +60,11 @@ jobs:
       - name: Lint check
         run: npm run lint
 
-      # 6. 빌드
-      - name: Build
-        run: npm run build
-        env:
-          NODE_ENV: production
-
-      # 7. Netlify CLI 설치
+      # 6. Netlify CLI 설치
       - name: Install Netlify CLI
         run: npm install -g netlify-cli
 
-      # 8. Netlify에 배포
+      # 7. Netlify에 배포
       - name: Deploy to Netlify
         run: |
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
@@ -79,6 +73,7 @@ jobs:
             netlify deploy --alias develop-preview --message "Deploy from GitHub Actions: ${{ github.event.head_commit.message }}"
           fi
         env:
+          NETLIFY_DATABASE_URL: ${{ secrets.NETLIFY_DATABASE_URL }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         timeout-minutes: 10
