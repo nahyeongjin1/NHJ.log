@@ -1,4 +1,4 @@
-import { auth } from 'db/auth';
+import { auth } from '~/lib/auth.server';
 import type { Route } from './+types/auth.$';
 
 export async function loader({ request }: Route.LoaderArgs) {
