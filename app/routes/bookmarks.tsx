@@ -7,12 +7,14 @@ import { CategoryFilter } from '~/components/CategoryFilter';
 import { BookmarkList } from '~/components/BookmarkList';
 import { getBookmarks } from '~/lib/content.server';
 import { siteConfig } from '~/config/site';
+import { generateMeta } from '~/lib/seo';
 
 export function meta(_args: Route.MetaArgs) {
-  return [
-    { title: `${siteConfig.pages.bookmarks.title} - ${siteConfig.name}` },
-    { name: 'description', content: siteConfig.pages.bookmarks.description },
-  ];
+  return generateMeta({
+    title: siteConfig.pages.bookmarks.title,
+    description: siteConfig.pages.bookmarks.description,
+    url: `${siteConfig.url}/bookmarks`,
+  });
 }
 
 export async function loader() {

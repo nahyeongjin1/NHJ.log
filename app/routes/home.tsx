@@ -8,12 +8,14 @@ import { PostCard } from '~/components/PostCard';
 import { ProjectCard } from '~/components/ProjectCard';
 import { getPosts, getProjects } from '~/lib/content.server';
 import { siteConfig } from '~/config/site';
+import { generateMeta } from '~/lib/seo';
 
 export function meta(_args: Route.MetaArgs) {
-  return [
-    { title: `${siteConfig.name}` },
-    { name: 'description', content: siteConfig.description },
-  ];
+  return generateMeta({
+    title: siteConfig.name,
+    description: siteConfig.description,
+    url: siteConfig.url,
+  });
 }
 
 // Example middleware that adds a custom header
