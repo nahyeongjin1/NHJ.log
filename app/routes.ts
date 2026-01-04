@@ -8,8 +8,6 @@ export default [
   route('projects', 'routes/projects.tsx'),
   route('bookmarks', 'routes/bookmarks.tsx'),
   route('about', 'routes/about.tsx'),
-  route('design-test', 'routes/design-test.tsx'),
-  route('examples', 'routes/examples.tsx'),
   route('action/set-theme', 'routes/action/set-theme.ts'),
   route('api/test-notion', 'routes/api/test-notion.ts'),
   route('api/comments', 'routes/api/comments.ts'),
