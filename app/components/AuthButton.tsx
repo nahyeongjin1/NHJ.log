@@ -35,7 +35,10 @@ function AuthButtonClient({ variant }: AuthButtonProps) {
   const { data: session, isPending } = useSession();
 
   const handleLogin = () => {
-    signIn.social({ provider: 'github' });
+    signIn.social({
+      provider: 'github',
+      callbackURL: window.location.pathname,
+    });
   };
 
   const handleLogout = () => {
