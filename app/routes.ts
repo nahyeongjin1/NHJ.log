@@ -12,5 +12,5 @@ export default [
   route('examples', 'routes/examples.tsx'),
   route('action/set-theme', 'routes/action/set-theme.ts'),
   route('api/test-notion', 'routes/api/test-notion.ts'),
-  route('api/auth', 'routes/api/auth.$.ts'),
+  route('api/auth/*', 'routes/api/auth.$.ts'),
 ] satisfies RouteConfig;
