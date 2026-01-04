@@ -1,5 +1,6 @@
 import { useMdxComponent, useMdxAttributes } from 'react-router-mdx/client';
 import { init, loadMdx } from 'react-router-mdx/server';
+import { useLocation } from 'react-router';
 import rehypePrettyCode from 'rehype-pretty-code';
 import remarkGfm from 'remark-gfm';
 import type { Route } from './+types/posts.$slug';
@@ -13,6 +14,7 @@ import { Embed } from '~/components/mdx/Embed';
 import { Text } from '~/components/mdx/Text';
 import { Mermaid } from '~/components/mdx/Mermaid';
 import { CodeBlock } from '~/components/mdx/CodeBlock';
+import { Comments } from '~/components/Comments';
 
 const components = {
   Callout,
@@ -80,6 +82,11 @@ export default function PostPage() {
   const MdxContent = useMdxComponent(components);
   const rawAttributes = useMdxAttributes();
   const attributes = rawAttributes as unknown as PostAttributes;
+  const location = useLocation();
+
+  // react-router-mdx는 정적 라우트를 생성하므로 useParams()가 비어있음
+  // pathname에서 slug 추출: /posts/my-slug -> my-slug
+  const slug = location.pathname.split('/posts/')[1];
 
   return (
     <PageLayout
@@ -113,6 +120,8 @@ export default function PostPage() {
         {/* eslint-disable-next-line react-hooks/static-components  */}
         <MdxContent />
       </article>
+
+      {slug && <Comments postSlug={slug} />}
     </PageLayout>
   );
 }
