@@ -110,7 +110,7 @@ async function processProject(project: Project): Promise<Project> {
  */
 async function saveJson<T>(filename: string, data: T): Promise<void> {
   const filepath = path.join(CONTENT_DIR, filename);
-  await fs.writeFile(filepath, JSON.stringify(data, null, 2), 'utf-8');
+  await fs.writeFile(filepath, JSON.stringify(data, null, 2) + '\n', 'utf-8');
   console.log(`   ✓ ${filename}`);
 }
 
@@ -149,7 +149,7 @@ async function saveMdx(
 
   const frontmatter = generateFrontmatter(post);
   const filepath = path.join(dir, `${slug}.mdx`);
-  const mdxContent = `${frontmatter}\n\n${content}`;
+  const mdxContent = `${frontmatter}\n\n${content}\n`;
   await fs.writeFile(filepath, mdxContent, 'utf-8');
 }
 
@@ -195,7 +195,8 @@ function generateSitemap(posts: Post[]): string {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${staticEntries}
 ${postEntries}
-</urlset>`;
+</urlset>
+`;
 }
 
 /**
