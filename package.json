@@ -12,15 +12,21 @@
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
-    "sync-notion": "tsx -r tsconfig-paths/register --env-file=.env scripts/sync-notion.ts"
+    "sync-notion": "tsx -r tsconfig-paths/register --env-file=.env scripts/sync-notion.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "netlify dev:exec drizzle-kit migrate",
+    "db:studio": "netlify dev:exec drizzle-kit studio"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.957.0",
     "@mdx-js/react": "^3.1.1",
+    "@netlify/neon": "^0.1.0",
     "@notionhq/client": "^5.4.0",
     "@react-router/node": "^7.11.0",
     "@tailwindcss/typography": "^0.5.19",
+    "better-auth": "^1.4.10",
     "cheerio": "^1.1.2",
+    "drizzle-orm": "^0.45.1",
     "isbot": "^5.1.27",
     "lucide-react": "^0.556.0",
     "mermaid": "^11.12.2",
@@ -45,6 +51,7 @@
     "@typescript-eslint/eslint-plugin": "^8.46.4",
     "@typescript-eslint/parser": "^8.46.4",
     "autoprefixer": "^10.4.21",
+    "drizzle-kit": "^0.31.8",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",
@@ -69,7 +76,6 @@
       "prettier --write"
     ]
   },
-  "packageManager": "pnpm@10.12.2+sha512.a32540185b964ee30bb4e979e405adc6af59226b438ee4cc19f9e8773667a66d302f5bfee60a39d3cac69e35e4b96e708a71dd002b7e9359c4112a1722ac323f",
   "overrides": {
     "jws": ">=3.2.3",
     "node-forge": ">=1.3.2"
