@@ -12,6 +12,8 @@
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "publish": "bash scripts/publish.sh",
+    "deploy": "bash scripts/deploy.sh",
     "sync-notion": "tsx -r tsconfig-paths/register --env-file=.env scripts/sync-notion.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "netlify dev:exec drizzle-kit migrate",
