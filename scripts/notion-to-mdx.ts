@@ -229,7 +229,11 @@ function convertBlocksWithMaps(
     }
   }
 
-  return lines.join('\n\n');
+  // 빈 문자열 제거 후 조인, 연속 빈 줄 정리
+  return lines
+    .filter((line) => line.trim() !== '')
+    .join('\n\n')
+    .replace(/\n{3,}/g, '\n\n');
 }
 
 function convertBlock(

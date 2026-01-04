@@ -118,17 +118,20 @@ async function saveJson<T>(filename: string, data: T): Promise<void> {
  * Frontmatter 생성
  */
 function generateFrontmatter(post: Post): string {
+  // single quote 이스케이프 처리
+  const escapeQuote = (str: string) => str.replace(/'/g, "''");
+
   const lines = [
     '---',
-    `title: "${post.title.replace(/"/g, '\\"')}"`,
-    `excerpt: "${post.excerpt.replace(/"/g, '\\"')}"`,
-    `createdAt: "${post.createdAt}"`,
-    `updatedAt: "${post.updatedAt}"`,
-    `tags: [${post.tags.map((t) => `"${t}"`).join(', ')}]`,
+    `title: '${escapeQuote(post.title)}'`,
+    `excerpt: '${escapeQuote(post.excerpt)}'`,
+    `createdAt: '${post.createdAt}'`,
+    `updatedAt: '${post.updatedAt}'`,
+    `tags: [${post.tags.map((t) => `'${escapeQuote(t)}'`).join(', ')}]`,
   ];
 
   if (post.thumbnail) {
-    lines.push(`thumbnail: "${post.thumbnail}"`);
+    lines.push(`thumbnail: '${post.thumbnail}'`);
   }
 
   lines.push('---');
