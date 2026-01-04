@@ -8,7 +8,7 @@ export default [
   route('projects', 'routes/projects.tsx'),
   route('bookmarks', 'routes/bookmarks.tsx'),
   route('about', 'routes/about.tsx'),
-  route('action/set-theme', 'routes/action/set-theme.ts'),
+  route('api/set-theme', 'routes/api/set-theme.ts'),
   route('api/test-notion', 'routes/api/test-notion.ts'),
   route('api/comments', 'routes/api/comments.ts'),
   route('api/auth/*', 'routes/api/auth.$.ts'),

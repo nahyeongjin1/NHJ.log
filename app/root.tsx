@@ -80,7 +80,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   const data = useLoaderData<typeof loader>();
 
   return (
-    <ThemeProvider specifiedTheme={data?.theme} themeAction="/action/set-theme">
+    <ThemeProvider specifiedTheme={data?.theme} themeAction="/api/set-theme">
       <InnerLayout>{children}</InnerLayout>
     </ThemeProvider>
   );
