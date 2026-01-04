@@ -36,6 +36,9 @@ export function generateMeta(config: SEOConfig) {
     { title: fullTitle },
     { name: 'description', content: description },
 
+    // Canonical URL
+    { tagName: 'link', rel: 'canonical', href: url },
+
     // Open Graph
     { property: 'og:title', content: title },
     { property: 'og:description', content: description },
