@@ -1,0 +1,286 @@
+---
+title: 'TypeScript 컴파일러는 왜 Go로 다시 작성될까?'
+excerpt: 'tsc가 Go로 바뀌면 뭐가 달라지는가? Native code, GC, 그리고 Rust가 아닌 이유'
+createdAt: '2026-01-05T08:00:00.000Z'
+updatedAt: '2026-01-05T09:42:00.000Z'
+tags: ['Typescript', 'Go', 'Compiler', 'Open Source']
+thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2dfbdc82-a936-80cd-9e5f-efa4b8b9dd46/thumbnail.png'
+---
+
+## TL;DR
+
+---
+
+<Callout icon="💡">
+1. TypeScript 7.0부터 tsc/tsserver가 Go로 재작성됨
+
+1. 빌드 10배, 에디터 로드 8배 빨라짐
+
+1. 단, TS → JS 변환과 런타임은 변함없음 (V8 여전히 필요)
+
+1. Rust가 아닌 Go인 이유: Garbage Collection 필수 + 1:1 포팅 가능
+</Callout>
+
+## 발단: CONTRIBUTING.md에서 발견한 한 줄
+
+---
+
+필자는 Node.js 백엔드 개발자를 희망하고 있기도 하고, React 경험도 있어서 TypeScript를 좋아한다.
+
+그래서 Effective TypeScript를 읽어보던 중 **tsc**와 **tsserver**의 구현이 궁금해졌고 다음 레포지토리를 뜯어보기로 했다.
+
+<LinkCard url="https://github.com/microsoft/TypeScript" title="GitHub - microsoft/TypeScript: TypeScript is a superset of JavaScript that compiles to clean JavaScript output." description="TypeScript is a superset of JavaScript that compiles to clean JavaScript output. - microsoft/TypeScript" image="https://opengraph.githubassets.com/1165c4b3b82a0f15cbe1496838ab9c2450001869d6a1f589d199f9f6c98574ae/microsoft/TypeScript" favicon="https://github.githubassets.com/favicons/favicon.svg" />
+
+그런데 `CONTRIBUTING.md` 최상단에서 이런 문구를 발견했다:
+
+```markdown
+# Note
+
+🚨 **Important** 🚨: All code changes should be submitted to the 
+https://github.com/microsoft/typescript-go repo.
+```
+
+TypeScript를... Go로 만든다고?
+
+알고보니 tsc, tsserver 그리고 이 둘의 근간이 되는 컴파일러 파이프라인(Scanner → Parser → Binder → Checker)을 전부 Go로 포팅한다는 것이었다.
+
+## 배경: 왜 다시 만드는가
+
+---
+
+TypeScript의 핵심 가치는 뛰어난 개발자 경험이다. 
+
+하지만 코드베이스가 커질수록 TypeScript 자체가 병목이 되는 상황이 발생했다.
+
+대규모 프로젝트에서 개발자들은 긴 로드/체크 시간을 경험했다.
+
+예를 들어 VS Code처럼 150만 줄짜리 프로젝트를 열면, 에디터가 전체 프로젝트의 타입 정보를 분석하는 데만 10초 가까이 걸린다. 
+
+그 사이에 자동완성, 에러 표시, Go to Definition 같은 기능은 제대로 동작하지 않는다.
+
+이를 피하려면 `tsconfig.json`에서 `include` 범위를 좁히거나 project references로 프로젝트를 쪼개야 하는데, 그러면 에디터가 전체 코드베이스를 한 번에 보지 못해서 cross-reference 기능이 제한된다.
+
+즉, "빠른 시작"과 "완전한 타입 분석" 사이에서 타협해야 했던 것이다.
+
+공식 블로그에서 공개한 벤치마크를 보면 문제의 심각성을 알 수 있다:
+
+| 코드베이스 | LOC | 기존 | Native (Go) | 향상 |
+| --- | --- | --- | --- | --- |
+| VS Code | 1,505,000 | 77.8s | 7.5s | 10.4x |
+| Playwright | 356,000 | 11.1s | 1.1s | 10.1x |
+| TypeORM | 270,000 | 17.5s | 1.3s | 13.5x |
+| date-fns | 104,000 | 6.5s | 0.7s | 9.5x |
+| tRPC | 18,000 | 5.5s | 0.6s | 9.1x |
+| rxjs | 2,100 | 1.1s | 0.1s | 11.0x |
+
+에디터 로드 시간도 마찬가지다. VS Code 프로젝트 기준으로 9.6초에서 1.2초로, 약 8배 빨라진다.
+
+Anders Hejlsberg(TypeScript 창시자)의 말을 빌리자면:
+
+> "JavaScript는 애초에 compute-intensive한 시스템 레벨 워크로드를 위한 언어가 아니었다. 
+> 반면 Go는 정확히 그 목적으로 설계되었다."
+
+## 무엇을 포팅하는가
+
+---
+
+포팅 대상은 크게 두 가지다:
+
+- **tsc**: 커맨드라인 컴파일러. `.ts` 파일을 `.js`로 변환하고 타입 체크를 수행한다.
+
+- **tsserver**: 에디터용 언어 서버. 자동완성, 에러 표시, Go to Definition 등을 담당한다.
+
+그리고 이 둘의 근간이 되는 컴파일러 파이프라인 전체가 포팅된다:
+
+`Source Code → Scanner → Parser → Binder → Checker → Emitter → Output`
+
+각 단계를 간단히 설명하면:
+
+| 단계 | 역할 |
+| --- | --- |
+| Scanner | 소스 코드를 토큰(token) 단위로 쪼갠다 |
+| Parser | 토큰을 AST(Abstract Syntax Tree)로 변환한다 |
+| Binder | AST 노드에 심볼(symbol) 정보를 연결한다 |
+| Checker | 타입 검사를 수행한다 (가장 복잡한 단계) |
+| Emitter | 최종 JavaScript 코드를 출력한다 |
+
+## "Native Port"의 의미
+
+---
+
+공식 블로그 제목이 "A 10x Faster TypeScript"이고, URL slug가 typescript-native-port다. 
+
+여기서 말하는 Native가 무슨 뜻일까?
+
+### Native Code란?
+
+Native code는 OS와 CPU가 직접 실행할 수 있는 기계어로 컴파일된 코드를 말한다.
+
+```text
+[Go - Native]
+Go 소스코드 → Go 컴파일러 → 바이너리 실행파일
+                                 ↓
+                            OS가 직접 실행
+
+[TypeScript - Non-native]
+TS 소스코드 → tsc → JavaScript → Node.js(V8) → 실행
+                                      ↑
+                               런타임이 필요
+```
+
+즉, 기존 tsc는 Node.js 위에서 돌아가는 JavaScript 프로그램이었다. 
+
+새로운 tsc는 별도 런타임 없이 OS에서 바로 실행되는 바이너리다.
+
+### AOT vs JIT
+
+| 구분 | AOT (Ahead-of-Time) | JIT (Just-in-Time) |
+| --- | --- | --- |
+| 컴파일 시점 | 실행 전 | 실행 중 |
+| 대표 언어 | Go, Rust, C, C++ | JavaScript, Python |
+| 특징 | 바이너리 배포, 콜드 스타트 없음 | 런타임 필요, 워밍업 필요 |
+
+### 왜 Native가 빠른가?
+
+1. **콜드 스타트 없음**: JIT 워밍업 시간이 필요 없다
+
+1. **런타임 오버헤드 없음**: V8 같은 중간 레이어가 없다
+
+1. **메모리 효율**: 더 예측 가능하고 효율적인 메모리 관리
+
+1. **컴파일 타임 최적화**: 실행 전에 이미 최적화 완료
+
+기존 tsc를 실행하려면 Node.js가 JavaScript 파일을 로드하고, V8이 JIT 컴파일을 수행해야 했다. 
+
+Native 버전은 바이너리 하나만 실행하면 끝이다.
+
+## 오해: TS → JS 변환 없어지나?
+
+---
+
+여기서 헷갈릴 수 있는 부분이 있다.
+
+다른 분들은 아닐지 몰라도 일단 필자는 헷갈렸다.
+
+> tsc가 Go로 바뀌면, TypeScript도 JavaScript 안 거치고 바로 실행되는 거 아닌가?
+
+아니다. **컴파일러의 구현 언어**와 **컴파일러가 하는 일**은 별개다.
+
+```text
+[기존]
+tsc (TypeScript로 작성됨) → .ts 파일을 .js로 변환
+
+[Go 포팅 후]
+tsc (Go로 작성됨) → .ts 파일을 .js로 변환
+```
+
+달라지는 건 tsc 자체의 실행 속도다. 
+
+tsc의 출력물은 여전히 JavaScript이고, 그 JavaScript를 실행하려면 여전히 V8 같은 JS 엔진이 필요하다.
+
+| 구분 | 기존 | Go 포팅 후 |
+| --- | --- | --- |
+| tsc 실행 속도 | 느림 | 10배 빠름 |
+| 에디터 반응 속도 | 보통 | 8배 빠름 |
+| TS → JS 변환 필요 | O | O |
+| JS 실행에 V8 필요 | O | O |
+| 최종 앱 성능 | 동일 | 동일 |
+
+결국 **개발자 경험(DX)**이 좋아지는 거지, 최종 사용자가 쓰는 앱의 런타임 성능과는 무관하다.
+
+## 왜 Rust가 아니라 Go인가
+
+---
+
+요즘 JavaScript 생태계의 도구들은 대부분 Rust로 작성된다. 
+
+**esbuild**는 Go지만, **SWC**, **Deno**, **Biome** 등은 전부 Rust다.
+
+그런데 TypeScript 팀은 Go를 선택했다. 
+
+심지어 Anders Hejlsberg는 C#을 만든 사람인데, 자사 언어도 아닌 Go를 골랐다.
+
+왜일까?
+
+### 1. Garbage Collection이 필수다
+
+Anders Hejlsberg가 직접 설명한 내용이다:
+
+> 우리의 모든 데이터 구조는 순환 참조로 가득하다. 
+> AST에는 child 포인터와 parent 포인터가 있고, symbol은 AST 노드를 참조하고, AST 노드는 다시 symbol을 참조한다. 
+> 타입들도 재귀적이라 서로 순환한다.
+
+Rust는 GC가 없다.
+
+대신 ownership과 borrow checker로 메모리를 관리한다.
+
+TypeScript 컴파일러처럼 순환 참조가 많은 구조를 Rust로 옮기려면, 메모리 관리 방식을 근본적으로 재설계해야 한다.
+
+이건 포팅이 아니라 완전한 재작성이 된다.
+
+Go는 GC가 있으면서도 Native 바이너리를 만들 수 있다.
+
+TypeScript 컴파일러의 기존 구조를 거의 그대로 유지하면서 포팅할 수 있었던 이유다.
+
+### 2. 포팅 vs 재작성
+
+TypeScript는 수백만 개의 프로젝트에서 사용된다.
+
+새 버전이 기존과 다르게 동작하면 생태계 전체가 흔들린다.
+
+재작성은 위험하다:
+
+- 시간이 훨씬 오래 걸린다
+
+- 미묘한 동작 차이가 생길 수 있다
+
+- 기존 버전과 새 버전을 동시에 유지보수해야 한다
+
+Go를 선택한 덕분에 기존 코드를 거의 1:1로 포팅할 수 있었다.
+
+팀은 6개월 만에 80% 기능을 구현했다.
+
+### 3. SWC 개발자의 선례
+
+SWC를 만든 kdy1(강동윤)님도 Rust로 TypeScript 타입 체커를 구현하려고 시도했다가 포기했다.
+
+이후 Go로 전환해서 시도했다가, 다시 Rust로 돌아갔지만 결국 완성하지 못했다.
+
+TypeScript의 타입 시스템은 튜링 완전(turing-complete)하고, 복잡한 제네릭과 조건부 타입이 얽혀 있다. 
+
+이걸 Rust의 메모리 모델에 맞추는 건 엄청난 작업이다.
+
+### 4. 동시성으로 추가 성능 확보
+
+Go의 goroutine과 channel을 활용해서 병렬 처리를 구현했다.
+
+Anders Hejlsberg에 따르면:
+
+- Native 컴파일로 약 3배 향상
+
+- 동시성 활용으로 추가 3배 향상
+
+- 합쳐서 약 10배
+
+기존 tsc는 JavaScript의 싱글 스레드 한계 때문에 이런 최적화가 어려웠다.
+
+### 5. 왜 C#은 아닌가?
+
+Anders Hejlsberg가 C#을 만들었는데 왜 C#을 안 썼을까?
+
+- TypeScript 컴파일러는 함수형 스타일 + struct 위주
+
+- C#은 클래스 기반 객체지향에 더 적합
+
+- Go가 기존 코드 구조와 더 잘 맞았다
+
+## 관련 자료
+
+---
+
+| 자료 | 링크 |
+| --- | --- |
+| 공식 블로그 | [https://devblogs.microsoft.com/typescript/typescript-native-port/](https://devblogs.microsoft.com/typescript/typescript-native-port/) |
+| typescript-go 레포지토리 | [https://github.com/microsoft/typescript-go](https://github.com/microsoft/typescript-go) |
+| Why Go? 디스커션 | [https://github.com/microsoft/typescript-go/discussions/411](https://github.com/microsoft/typescript-go/discussions/411) |
+| TypeScript 레포지토리 | [https://github.com/microsoft/TypeScript](https://github.com/microsoft/TypeScript) |

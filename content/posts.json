@@ -1,5 +1,22 @@
 [
   {
+    "id": "2dfbdc82-a936-80cd-9e5f-efa4b8b9dd46",
+    "title": "TypeScript 컴파일러는 왜 Go로 다시 작성될까?",
+    "slug": "typescript-go-port",
+    "excerpt": "tsc가 Go로 바뀌면 뭐가 달라지는가? Native code, GC, 그리고 Rust가 아닌 이유",
+    "tags": [
+      "Typescript",
+      "Go",
+      "Compiler",
+      "Open Source"
+    ],
+    "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2dfbdc82-a936-80cd-9e5f-efa4b8b9dd46/thumbnail.png",
+    "published": true,
+    "createdAt": "2026-01-05T08:00:00.000Z",
+    "updatedAt": "2026-01-05T09:42:00.000Z",
+    "readingTime": 9
+  },
+  {
     "id": "2d8bdc82-a936-80d5-a9ea-cd644158618f",
     "title": "React Router v7 Pre-render + Netlify 호환 이슈 해결 과정",
     "slug": "react-router-prerender-netlify-build",
