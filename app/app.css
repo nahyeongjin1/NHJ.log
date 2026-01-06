@@ -152,3 +152,9 @@
   --tw-prose-th-borders: var(--border-strong);
   --tw-prose-td-borders: var(--border-default);
 }
+
+/* 테이블 가로 스크롤 */
+.prose table {
+  display: block;
+  overflow-x: auto;
+}
