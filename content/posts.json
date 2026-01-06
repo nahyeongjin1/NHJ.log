@@ -36,46 +36,6 @@
     "readingTime": 3
   },
   {
-    "id": "2d4bdc82-a936-80a0-b32d-ccd783f2e44e",
-    "title": "Docker Compose와 Nginx로 Blue-Green Deployment 구현",
-    "slug": "docker-compose-nginx-blue-green",
-    "excerpt": "Downtime 최소화를 위해 다양한 배포 전략 중 블루-그린 배포를 선택하게 되었던 이유",
-    "tags": [
-      "Shell Script",
-      "Docker Compose",
-      "Nginx",
-      "SSH",
-      "GIthub Actions"
-    ],
-    "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d4bdc82-a936-80a0-b32d-ccd783f2e44e/thumbnail.jpg",
-    "published": true,
-    "createdAt": "2025-12-25T12:14:00.000Z",
-    "updatedAt": "2025-12-28T09:54:00.000Z",
-    "relatedProject": "2cebdc82-a936-8005-beca-e1a9eaddbce6",
-    "readingTime": 1
-  },
-  {
-    "id": "2d3bdc82-a936-8034-a801-e9bf4a6b1fa8",
-    "title": "서로 다른 3개의 서비스를 Nginx와 함께 배포하며 생긴 일",
-    "slug": "aiew-docker-compose-depoloyment",
-    "excerpt": "IaaS에 4개의 컨테이너를 Docker Compose로 배포하며 발생한 일들",
-    "tags": [
-      "Docker",
-      "Docker Compose",
-      "Env",
-      "Infra",
-      "Nginx",
-      "Node.js",
-      "Python"
-    ],
-    "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d3bdc82-a936-8034-a801-e9bf4a6b1fa8/thumbnail.png",
-    "published": true,
-    "createdAt": "2025-12-24T07:49:00.000Z",
-    "updatedAt": "2025-12-28T09:54:00.000Z",
-    "relatedProject": "2cebdc82-a936-8005-beca-e1a9eaddbce6",
-    "readingTime": 1
-  },
-  {
     "id": "2cebdc82-a936-804e-8b53-f19167685081",
     "title": "OCI Free Tier 인스턴스 확보 삽질기",
     "slug": "oci-free-tier-instance",

@@ -12,7 +12,7 @@
       "Frontend",
       "Backend"
     ],
-    "status": "in-progress",
+    "status": "maintenance",
     "techStack": [
       "React Router v7 Framework Mode",
       "Notion API",
@@ -24,7 +24,7 @@
     "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/projects/2d7bdc82-a936-8009-b07b-fec049bf3f87/thumbnail.png",
     "published": true,
     "createdAt": "2025-12-28T06:46:00.000Z",
-    "updatedAt": "2025-12-29T06:28:00.000Z",
+    "updatedAt": "2026-01-06T05:22:00.000Z",
     "relatedPosts": [
       "2d8bdc82-a936-8010-bca7-daa57a635fd2",
       "2d8bdc82-a936-80d5-a9ea-cd644158618f"
