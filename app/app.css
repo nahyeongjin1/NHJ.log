@@ -79,15 +79,15 @@
 
   /* Typography Utilities */
   .heading-1 {
-    @apply font-semibold text-4xl leading-[44px];
-  }
-
-  .heading-2 {
     @apply font-semibold text-3xl leading-[38px];
   }
 
-  .heading-3 {
+  .heading-2 {
     @apply font-semibold text-2xl leading-8;
+  }
+
+  .heading-3 {
+    @apply font-semibold text-xl leading-7;
   }
 
   .body-large {
