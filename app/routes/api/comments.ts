@@ -23,6 +23,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         id: user.id,
         name: user.name,
         image: user.image,
+        githubUsername: user.githubUsername,
       },
     })
     .from(comment)
