@@ -1,8 +1,13 @@
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, or } from 'drizzle-orm';
 import { db } from 'db';
 import { comment, user } from 'db/schema';
 import { auth } from '~/lib/auth.server';
 import type { Route } from './+types/comments';
+
+// trailing slash 제거
+function normalizeSlug(slug: string): string {
+  return slug.replace(/\/+$/, '');
+}
 
 // GET /api/comments?postSlug=xxx
 export async function loader({ request }: Route.LoaderArgs) {
@@ -13,6 +18,9 @@ export async function loader({ request }: Route.LoaderArgs) {
     return Response.json({ error: 'postSlug is required' }, { status: 400 });
   }
 
+  const normalizedSlug = normalizeSlug(postSlug);
+
+  // trailing slash 유무 관계없이 모두 조회 (기존 데이터 호환)
   const comments = await db
     .select({
       id: comment.id,
@@ -28,7 +36,12 @@ export async function loader({ request }: Route.LoaderArgs) {
     })
     .from(comment)
     .leftJoin(user, eq(comment.userId, user.id))
-    .where(eq(comment.postSlug, postSlug))
+    .where(
+      or(
+        eq(comment.postSlug, normalizedSlug),
+        eq(comment.postSlug, `${normalizedSlug}/`)
+      )
+    )
     .orderBy(desc(comment.createdAt));
 
   return Response.json({ comments });
@@ -62,7 +75,7 @@ export async function action({ request }: Route.ActionArgs) {
       .insert(comment)
       .values({
         id: crypto.randomUUID(),
-        postSlug,
+        postSlug: normalizeSlug(postSlug),
         userId: session.user.id,
         content: content.trim(),
       })
