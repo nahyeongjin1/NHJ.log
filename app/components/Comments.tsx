@@ -60,6 +60,9 @@ function CommentsSkeleton() {
 }
 
 function CommentsClient({ postSlug }: CommentsProps) {
+  // trailing slash 제거하여 정규화
+  const normalizedSlug = postSlug.replace(/\/+$/, '');
+
   const { data: session } = useSession();
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,7 +73,7 @@ function CommentsClient({ postSlug }: CommentsProps) {
 
   const fetchComments = useCallback(async () => {
     try {
-      const res = await fetch(`/api/comments?postSlug=${postSlug}`);
+      const res = await fetch(`/api/comments?postSlug=${normalizedSlug}`);
       const data = await res.json();
       setComments(data.comments || []);
     } catch (error) {
@@ -78,7 +81,7 @@ function CommentsClient({ postSlug }: CommentsProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [postSlug]);
+  }, [normalizedSlug]);
 
   useEffect(() => {
     fetchComments();
@@ -93,7 +96,7 @@ function CommentsClient({ postSlug }: CommentsProps) {
       const res = await fetch('/api/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postSlug, content: newComment }),
+        body: JSON.stringify({ postSlug: normalizedSlug, content: newComment }),
       });
 
       if (res.ok) {
