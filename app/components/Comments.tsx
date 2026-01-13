@@ -12,6 +12,7 @@ interface Comment {
     id: string;
     name: string;
     image: string | null;
+    githubUsername: string | null;
   } | null;
 }
 
@@ -216,79 +217,113 @@ function CommentsClient({ postSlug }: CommentsProps) {
             아직 댓글이 없습니다. 첫 댓글을 작성해보세요!
           </p>
         ) : (
-          comments.map((comment) => (
-            <div key={comment.id} className="flex gap-3">
-              <img
-                src={comment.user?.image || ''}
-                alt={comment.user?.name || ''}
-                className="w-10 h-10 rounded-full border border-default"
-              />
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-label text-primary">
-                    {comment.user?.name || 'Unknown'}
-                  </span>
-                  <span className="text-caption text-tertiary">
-                    {formatDate(comment.createdAt)}
-                  </span>
-                  {comment.createdAt !== comment.updatedAt && (
-                    <span className="text-caption text-tertiary">(수정됨)</span>
-                  )}
-                </div>
+          comments.map((comment) => {
+            const githubUrl = comment.user?.githubUsername
+              ? `https://github.com/${comment.user.githubUsername}`
+              : null;
 
-                {editingId === comment.id ? (
-                  <div>
-                    <textarea
-                      value={editContent}
-                      onChange={(e) => setEditContent(e.target.value)}
-                      className="w-full px-4 py-3 bg-secondary border border-default rounded-lg text-body text-primary resize-none focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)]"
-                      rows={3}
+            return (
+              <div key={comment.id} className="flex gap-3">
+                {githubUrl ? (
+                  <a
+                    href={githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:opacity-80 transition-opacity"
+                  >
+                    <img
+                      src={comment.user?.image || ''}
+                      alt={comment.user?.name || ''}
+                      className="w-10 h-10 rounded-full border border-default"
                     />
-                    <div className="mt-2 flex gap-2">
-                      <button
-                        onClick={() => handleEdit(comment.id)}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded text-caption hover:opacity-90"
-                      >
-                        <Check size={14} />
-                        저장
-                      </button>
-                      <button
-                        onClick={cancelEditing}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-tertiary text-secondary rounded text-caption hover:opacity-90"
-                      >
-                        <X size={14} />
-                        취소
-                      </button>
-                    </div>
-                  </div>
+                  </a>
                 ) : (
-                  <div>
-                    <p className="text-body text-primary whitespace-pre-wrap">
-                      {comment.content}
-                    </p>
-                    {session?.user?.id === comment.user?.id && (
-                      <div className="mt-2 flex gap-2">
-                        <button
-                          onClick={() => startEditing(comment)}
-                          className="flex items-center gap-1 text-caption text-tertiary hover:text-primary transition-colors"
-                        >
-                          <Edit2 size={14} />
-                          수정
-                        </button>
-                        <button
-                          onClick={() => handleDelete(comment.id)}
-                          className="flex items-center gap-1 text-caption text-tertiary hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 size={14} />
-                          삭제
-                        </button>
-                      </div>
+                  <img
+                    src={comment.user?.image || ''}
+                    alt={comment.user?.name || ''}
+                    className="w-10 h-10 rounded-full border border-default"
+                  />
+                )}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    {githubUrl ? (
+                      <a
+                        href={githubUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-label text-primary hover:underline"
+                      >
+                        {comment.user?.name || 'Unknown'}
+                      </a>
+                    ) : (
+                      <span className="text-label text-primary">
+                        {comment.user?.name || 'Unknown'}
+                      </span>
+                    )}
+                    <span className="text-caption text-tertiary">
+                      {formatDate(comment.createdAt)}
+                    </span>
+                    {comment.createdAt !== comment.updatedAt && (
+                      <span className="text-caption text-tertiary">
+                        (수정됨)
+                      </span>
                     )}
                   </div>
-                )}
+
+                  {editingId === comment.id ? (
+                    <div>
+                      <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        className="w-full px-4 py-3 bg-secondary border border-default rounded-lg text-body text-primary resize-none focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)]"
+                        rows={3}
+                      />
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          onClick={() => handleEdit(comment.id)}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded text-caption hover:opacity-90"
+                        >
+                          <Check size={14} />
+                          저장
+                        </button>
+                        <button
+                          onClick={cancelEditing}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-tertiary text-secondary rounded text-caption hover:opacity-90"
+                        >
+                          <X size={14} />
+                          취소
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-body text-primary whitespace-pre-wrap">
+                        {comment.content}
+                      </p>
+                      {session?.user?.id === comment.user?.id && (
+                        <div className="mt-2 flex gap-2">
+                          <button
+                            onClick={() => startEditing(comment)}
+                            className="flex items-center gap-1 text-caption text-tertiary hover:text-primary transition-colors"
+                          >
+                            <Edit2 size={14} />
+                            수정
+                          </button>
+                          <button
+                            onClick={() => handleDelete(comment.id)}
+                            className="flex items-center gap-1 text-caption text-tertiary hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 size={14} />
+                            삭제
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </section>
