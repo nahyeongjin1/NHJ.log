@@ -7,10 +7,23 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
   }),
+  user: {
+    additionalFields: {
+      githubUsername: {
+        type: 'string',
+        required: false,
+        input: false,
+      },
+    },
+  },
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      mapProfileToUser: (profile) => ({
+        githubUsername: profile.login,
+      }),
+      overrideUserInfoOnSignIn: true,
     },
   },
 });
