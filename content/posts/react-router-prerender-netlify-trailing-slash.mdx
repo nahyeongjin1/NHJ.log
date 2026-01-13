@@ -1,0 +1,238 @@
+---
+title: 'Trailing Slash 버그로 배운 RRv7 prerender와 Netlify의 동작 방식'
+excerpt: '댓글이 새로고침 해야만 보이는 버그를 추적하다가 React Router v7의 Static Pre-rendering의 빌드 구조와 Netlify 정적 파일 서빙의 상호작용을 이해한 경험'
+createdAt: '2026-01-13T08:04:00.000Z'
+updatedAt: '2026-01-13T08:36:00.000Z'
+tags: ['React Router v7', 'Netlify', 'Static Pre-rendering']
+thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2e7bdc82-a936-8065-862a-d7109eb9c01b/thumbnail.png'
+---
+
+## TL;DR
+
+---
+
+<Callout icon="💡">
+- 문제: 클라이언트 네비게이션으로 접근하면 댓글이 안 보이고, 새로고침하면 보임
+
+- 원인: Netlify가 trailing slash를 붙여 리디렉션 → URL 불일치로 댓글 조회 실패
+
+- 해결: slug 정규화로 trailing slash 유무와 관계없이 동작하도록 수정
+</Callout>
+
+## 증상
+
+---
+
+이 블로그에는 포스트별 댓글 기능이 있다.
+
+그런데 이상한 버그가 있었다.
+
+| 접근 방식 | URL | 댓글 |
+| --- | --- | --- |
+| 홈에서 PostCard 클릭 | `/posts/typescript-go-port` | ❌ 안 보임 |
+| 새로고침 | `/posts/typescript-go-port/` | ✅ 보임 |
+
+같은 페이지인데 접근 방식에 따라 댓글이 보이기도 하고 안 보이기도 했다.
+
+URL 끝에 슬래시(/) 하나 차이였다.
+
+## 원인 추적
+
+---
+
+먼저 댓글이 있는 포스트의 API를 확인했다.
+
+```bash
+curl "http://localhost:5173/api/comments?postSlug=typescript-go-port"
+```
+
+```json
+{
+  "comments": []
+}
+```
+
+분명 댓글이 있는데 빈 배열이 반환됐다. 
+
+DB를 직접 확인해보니
+
+<Image src="https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2e7bdc82-a936-8065-862a-d7109eb9c01b/2e7bdc82-a936-8086-95e0-dd81645ea33d.png" />
+
+post_slug가 `typescript-go-port/`로 저장되어 있었다.
+
+- API 조회: `typescript-go-port` (슬래시 없음)
+
+- DB 저장: `typescript-go-port/` (슬래시 있음)
+
+불일치의 원인은 명확했다. 
+
+그런데 왜 슬래시가 붙는 걸까?
+
+## 왜 trailing slash가 붙는가?
+
+---
+
+빌드 결과물을 확인했다.
+
+<Image src="https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2e7bdc82-a936-8065-862a-d7109eb9c01b/2e7bdc82-a936-80bb-a542-e0f6a617ed7f.png" />
+
+React Router의 prerender는 각 라우트를 `디렉토리/index.html` 형태로 생성한다.
+
+여기서 Netlify의 정적 파일 서빙 규칙이 작동한다:
+
+<Mermaid chart={`sequenceDiagram
+    participant User as 사용자
+    participant Netlify as Netlify
+
+    User->>Netlify: GET /posts/slug
+    Note right of Netlify: 디렉토리 감지<br/>index.html 존재
+    Netlify-->>User: 301 Redirect /posts/slug/
+    User->>Netlify: GET /posts/slug/
+    Netlify-->>User: index.html`} />
+
+Netlify는 디렉토리 경로로 요청이 오면 trailing slash를 붙여 리디렉션한다.
+
+이건 React Router가 아니라 Netlify(정적 파일 서버)의 동작이다.
+
+## 왜 클릭 시에는 안 붙는가?
+
+---
+
+그런데 PostCard를 클릭해서 접근하면 trailing slash 없이 페이지가 잘 열린다.
+
+prerender된 HTML 없이 어떻게 렌더링되는 걸까?
+
+**핵심**은 클라이언트 네비게이션과 서버 요청의 차이다.
+
+### 클라이언트 네비게이션 (PostCard 클릭)
+
+<Mermaid chart={`sequenceDiagram
+    participant User as 사용자
+    participant Browser as 브라우저
+    participant Netlify as Netlify
+
+    User->>Browser: PostCard 클릭
+    Note right of Browser: History API로<br/>URL만 변경
+    Browser->>Netlify: GET /posts/slug.data
+    Netlify-->>Browser: .data 파일
+    Note right of Browser: 데이터로 CSR`} />
+
+서버에 HTML을 요청하지 않는다. 
+
+이미 로드된 JavaScript가 라우팅을 처리하고, .data 파일만 fetch해서 클라이언트에서 렌더링한다.
+
+### 서버 요청 (새로고침)
+
+<Mermaid chart={`sequenceDiagram
+    participant User as 사용자
+    participant Browser as 브라우저
+    participant Netlify as Netlify
+
+    User->>Browser: 새로고침
+    Browser->>Netlify: GET /posts/slug
+    Note right of Netlify: 디렉토리 감지
+    Netlify-->>Browser: 301 → /posts/slug/
+    Browser->>Netlify: GET /posts/slug/
+    Netlify-->>Browser: index.html`} />
+
+새로고침은 서버에 HTML을 요청하므로 Netlify의 리디렉션이 발생한다.
+
+### **.data 파일이란?**
+
+```text
+build/client/posts/
+├── typescript-go-port/
+│   └── index.html       ← 서버 요청 시 사용
+└── typescript-go-port.data  ← 클라이언트 네비게이션 시 사용
+```
+
+.data 파일에는 해당 라우트의 loader 결과가 직렬화되어 있다.
+
+<Image src="https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2e7bdc82-a936-8065-862a-d7109eb9c01b/2e7bdc82-a936-80ad-88fd-f37d23a3c173.png" />
+
+대충 이렇게 생겼다.
+
+클라이언트 네비게이션 시 이 파일을 fetch해서 React 컴포넌트를 렌더링한다.
+
+## 해결
+
+---
+
+slug를 정규화해서 trailing slash 유무와 관계없이 동작하도록 수정했다.
+
+### 클라이언트 (Comments.tsx)
+
+```typescript
+function CommentsClient({ postSlug }: CommentsProps) {
+  // trailing slash 제거
+  const normalizedSlug = postSlug.replace(/\/+$/, '');
+
+  const fetchComments = useCallback(async () => {
+    const res = await fetch(`/api/comments?postSlug=${normalizedSlug}`);
+    // ...
+  }, [normalizedSlug]);
+
+  // ...
+}
+```
+
+### **API (comments.ts)**
+
+```typescript
+function normalizeSlug(slug: string): string {
+  return slug.replace(/\/+$/, '');
+}
+
+// GET: 기존 데이터 호환을 위해 양쪽 형식 모두 조회
+const comments = await db
+  .select({ /* ... */ })
+  .from(comment)
+  .where(
+    or(
+      eq(comment.postSlug, normalizedSlug),
+      eq(comment.postSlug, `${normalizedSlug}/`)
+    )
+  );
+
+// POST: 정규화된 slug로 저장
+const newComment = await db
+      .insert(comment)
+			.values({
+			  postSlug: normalizeSlug(postSlug),
+			  // ...
+			})
+			.returning();
+```
+
+이제 접근 방식과 관계없이 댓글이 정상적으로 보인다.
+
+## 정리
+
+---
+
+| 상황 | 동작 | 사용 파일 | trailing slash |
+| --- | --- | --- | --- |
+| 직접 URL 접속 / 새로고침 | Netlify가 HTML 서빙 | `index.html` | 붙음 (리디렉션) |
+| 클라이언트 네비게이션 | .data fetch → CSR | `.data` | 안 붙음 |
+
+정리하면:
+
+- React Router Prerender: 디렉토리/index.html 형태로 빌드
+
+- Netlify: 디렉토리 접근 시 trailing slash 리디렉션
+
+- 클라이언트 네비게이션: 서버 요청 없이 .data만 fetch
+
+이 세 가지가 맞물려 URL 불일치가 발생한 것이다.
+
+동적 데이터를 다룰 때는 URL 정규화를 고려하자.
+
+## 관련 자료
+
+---
+
+| 자료 | 링크 |
+| --- | --- |
+| React Router Prerender 공식 문서 | [https://reactrouter.com/how-to/pre-rendering](https://reactrouter.com/how-to/pre-rendering) |
+| Netlify trailing slash 리디렉션 설정 | [https://docs.netlify.com/routing/redirects/redirect-options/#trailing-slash](https://docs.netlify.com/routing/redirects/redirect-options/#trailing-slash) |
+| .data 파일과 클라이언트 데이터 로딩 | [https://reactrouter.com/how-to/client-data](https://reactrouter.com/how-to/client-data) |

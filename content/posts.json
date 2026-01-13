@@ -1,5 +1,22 @@
 [
   {
+    "id": "2e7bdc82-a936-8065-862a-d7109eb9c01b",
+    "title": "Trailing Slash 버그로 배운 RRv7 prerender와 Netlify의 동작 방식",
+    "slug": "react-router-prerender-netlify-trailing-slash",
+    "excerpt": "댓글이 새로고침 해야만 보이는 버그를 추적하다가 React Router v7의 Static Pre-rendering의 빌드 구조와 Netlify 정적 파일 서빙의 상호작용을 이해한 경험",
+    "tags": [
+      "React Router v7",
+      "Netlify",
+      "Static Pre-rendering"
+    ],
+    "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2e7bdc82-a936-8065-862a-d7109eb9c01b/thumbnail.png",
+    "published": true,
+    "createdAt": "2026-01-13T08:04:00.000Z",
+    "updatedAt": "2026-01-13T08:36:00.000Z",
+    "relatedProject": "2d7bdc82-a936-8009-b07b-fec049bf3f87",
+    "readingTime": 4
+  },
+  {
     "id": "2dfbdc82-a936-80cd-9e5f-efa4b8b9dd46",
     "title": "TypeScript 컴파일러는 왜 Go로 다시 작성될까?",
     "slug": "typescript-go-port",
