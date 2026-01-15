@@ -2,7 +2,7 @@
 title: 'Trailing Slash 버그로 배운 RRv7 prerender와 Netlify의 동작 방식'
 excerpt: '댓글이 새로고침 해야만 보이는 버그를 추적하다가 React Router v7의 Static Pre-rendering의 빌드 구조와 Netlify 정적 파일 서빙의 상호작용을 이해한 경험'
 createdAt: '2026-01-13T08:04:00.000Z'
-updatedAt: '2026-01-13T08:36:00.000Z'
+updatedAt: '2026-01-14T04:24:00.000Z'
 tags: ['React Router v7', 'Netlify', 'Static Pre-rendering']
 thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2e7bdc82-a936-8065-862a-d7109eb9c01b/thumbnail.png'
 ---
@@ -12,7 +12,7 @@ thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2e7
 ---
 
 <Callout icon="💡">
-- 문제: 클라이언트 네비게이션으로 접근하면 댓글이 안 보이고, 새로고침하면 보임
+- 문제: 클라이언트 내비게이션으로 접근하면 댓글이 안 보이고, 새로고침하면 보임
 
 - 원인: Netlify가 trailing slash를 붙여 리디렉션 → URL 불일치로 댓글 조회 실패
 
@@ -102,9 +102,9 @@ Netlify는 디렉토리 경로로 요청이 오면 trailing slash를 붙여 리�
 
 prerender된 HTML 없이 어떻게 렌더링되는 걸까?
 
-**핵심**은 클라이언트 네비게이션과 서버 요청의 차이다.
+**핵심**은 클라이언트 내비게이션과 서버 요청의 차이다.
 
-### 클라이언트 네비게이션 (PostCard 클릭)
+### 클라이언트 내비게이션 (PostCard 클릭)
 
 <Mermaid chart={`sequenceDiagram
     participant User as 사용자
@@ -143,7 +143,7 @@ prerender된 HTML 없이 어떻게 렌더링되는 걸까?
 build/client/posts/
 ├── typescript-go-port/
 │   └── index.html       ← 서버 요청 시 사용
-└── typescript-go-port.data  ← 클라이언트 네비게이션 시 사용
+└── typescript-go-port.data  ← 클라이언트 내비게이션 시 사용
 ```
 
 .data 파일에는 해당 라우트의 loader 결과가 직렬화되어 있다.
@@ -152,7 +152,7 @@ build/client/posts/
 
 대충 이렇게 생겼다.
 
-클라이언트 네비게이션 시 이 파일을 fetch해서 React 컴포넌트를 렌더링한다.
+클라이언트 내비게이션 시 이 파일을 fetch해서 React 컴포넌트를 렌더링한다.
 
 ## 해결
 
@@ -196,10 +196,10 @@ const comments = await db
 
 // POST: 정규화된 slug로 저장
 const newComment = await db
-      .insert(comment)
+			.insert(comment)
 			.values({
-			  postSlug: normalizeSlug(postSlug),
-			  // ...
+				postSlug: normalizeSlug(postSlug),
+				// ...
 			})
 			.returning();
 ```
@@ -213,7 +213,7 @@ const newComment = await db
 | 상황 | 동작 | 사용 파일 | trailing slash |
 | --- | --- | --- | --- |
 | 직접 URL 접속 / 새로고침 | Netlify가 HTML 서빙 | `index.html` | 붙음 (리디렉션) |
-| 클라이언트 네비게이션 | .data fetch → CSR | `.data` | 안 붙음 |
+| 클라이언트 내비게이션 | .data fetch → CSR | `.data` | 안 붙음 |
 
 정리하면:
 
@@ -221,7 +221,7 @@ const newComment = await db
 
 - Netlify: 디렉토리 접근 시 trailing slash 리디렉션
 
-- 클라이언트 네비게이션: 서버 요청 없이 .data만 fetch
+- 클라이언트 내비게이션: 서버 요청 없이 .data만 fetch
 
 이 세 가지가 맞물려 URL 불일치가 발생한 것이다.
 
@@ -233,6 +233,5 @@ const newComment = await db
 
 | 자료 | 링크 |
 | --- | --- |
-| React Router Prerender 공식 문서 | [https://reactrouter.com/how-to/pre-rendering](https://reactrouter.com/how-to/pre-rendering) |
+| Prerender 공식 문서 (.data 파일 설명 포함) | [https://reactrouter.com/how-to/pre-rendering](https://reactrouter.com/how-to/pre-rendering) |
 | Netlify trailing slash 리디렉션 설정 | [https://docs.netlify.com/routing/redirects/redirect-options/#trailing-slash](https://docs.netlify.com/routing/redirects/redirect-options/#trailing-slash) |
-| .data 파일과 클라이언트 데이터 로딩 | [https://reactrouter.com/how-to/client-data](https://reactrouter.com/how-to/client-data) |
