@@ -2,7 +2,7 @@
 title: '면접에서 털리며 이해한 OAuth2.0 + JWT 인증의 진짜 흐름'
 excerpt: '@fastify/oauth2와 fast-jwt 소스코드를 직접 뜯어보며 정리한 OAuth2.0 + JWT 보안의 실제 흐름'
 createdAt: '2026-01-16T09:58:00.000Z'
-updatedAt: '2026-01-16T12:34:00.000Z'
+updatedAt: '2026-01-16T12:41:00.000Z'
 tags: ['OAuth2.0', 'JWT', 'Fastify', 'Node.js', 'Security']
 thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2eabdc82-a936-8068-91b8-c4b02df23a4c/thumbnail.png'
 ---
@@ -33,9 +33,11 @@ AIew 프로젝트에서 멀쩡히 동작하는 OAuth2.0 + JWT 인증을 구현�
 
 문제는 그 다음이었다.
 
-> *"OAuth2.0 인증 흐름에서 Authorization Code가 탈취되면 어떻게 되나요? 방어 방법이 있나요?”
-> "alg: none 공격이 뭔가요?"
-> "state 파라미터는 정확히 어떤 공격을 막나요?"*
+> *"OAuth2.0 인증 흐름에서 Authorization Code가 탈취되면 어떻게 되나요? 방어 방법이 있나요?”*
+
+> *"alg: none 공격이 뭔가요?"*
+
+> *"state 파라미터는 정확히 어떤 공격을 막나요?"*
 
 하나도 제대로 답하지 못했다.
 
