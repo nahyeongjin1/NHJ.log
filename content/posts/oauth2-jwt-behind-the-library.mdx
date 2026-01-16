@@ -1,0 +1,557 @@
+---
+title: '면접에서 털리며 이해한 OAuth2.0 + JWT 인증의 진짜 흐름'
+excerpt: '@fastify/oauth2와 fast-jwt 소스코드를 직접 뜯어보며 정리한 OAuth2.0 + JWT 보안의 실제 흐름'
+createdAt: '2026-01-16T09:58:00.000Z'
+updatedAt: '2026-01-16T12:34:00.000Z'
+tags: ['OAuth2.0', 'JWT', 'Fastify', 'Node.js', 'Security']
+thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2eabdc82-a936-8068-91b8-c4b02df23a4c/thumbnail.png'
+---
+
+## TL;DR
+
+---
+
+<Callout icon="💡">
+1. **OAuth2.0**: `state` 파라미터는 CSRF를, `PKCE`는 Authorization Code 탈취를 막는다. 
+라이브러리가 자동 처리해주지만, 설정에 따라 PKCE는 명시적으로 켜야 할 수 있다.
+
+1. **JWT**: `alg: "none"` 공격과 알고리즘 혼동 공격은 "토큰이 주장하는 알고리즘을 믿지 않고, 서버가 허용한 알고리즘만 사용"하는 방식으로 방어한다.
+
+1. **교훈**: 라이브러리가 "할 수 있는 것"과 "자동으로 해주는 것"은 다르다. 
+내 코드에서 PKCE 미적용, algorithms 미작성을 발견했다.
+</Callout>
+
+## 배경
+
+---
+
+최근 기술 면접을 볼 때마다 풀스택, 백엔드, DevOps 분야를 막론하고 인증/인가 관련 질문을 받았다.
+
+AIew 프로젝트에서 멀쩡히 동작하는 OAuth2.0 + JWT 인증을 구현했었기에 답변은 어렵지 않았다.
+
+ OAuth2.0 흐름을 설명하고, JWT를 어떻게 사용했는지 답변하는 건 어렵지 않았다. 
+
+문제는 그 다음이었다.
+
+> *"OAuth2.0 인증 흐름에서 Authorization Code가 탈취되면 어떻게 되나요? 방어 방법이 있나요?”
+> "alg: none 공격이 뭔가요?"
+> "state 파라미터는 정확히 어떤 공격을 막나요?"*
+
+하나도 제대로 답하지 못했다.
+
+돌아보니 원인은 명확했다. 
+
+라이브러리가 다 해주니까 **동작은 했는데**, 정작 **왜 그렇게 동작하는지**는 몰랐던 거다.
+
+나는 졸업 프로젝트 AIew에서 `@fastify/oauth2`로 GitHub/Google OAuth2.0 로그인을, `@fastify/jwt`로 토큰 발급과 검증을 구현했다. 
+
+코드는 잘 동작했지만, 그 안에서 어떤 흐름과 보안 메커니즘이 작동하는지는 깊이 들여다보지 않았다.
+
+이 글에서는 내가 사용한 라이브러리의 소스코드를 직접 뜯어보며, OAuth2.0과 JWT의 보안 위협과 방어 메커니즘을 정리한다. 
+
+그리고 내 코드에서 실제로 놓쳤던 부분도 함께 공유한다.
+
+## **OAuth2.0 기본 흐름**
+
+---
+
+본격적으로 보안 이슈를 다루기 전에, OAuth2.0의 기본 구조를 짚고 가자.
+
+### 참여자
+
+OAuth2.0에는 네 명의 참여자가 있다.
+
+| 참여자 | 역할 | 예시 (AIew 기준) |
+| --- | --- | --- |
+| Resource Owner | 자원의 실제 소유자 | 사용자 (GitHub 계정 주인) |
+| Client | 자원에 접근하려는 애플리케이션 | AIew 백엔드 서버 |
+| Authorization Server | 인증 처리 및 토큰 발급 | GitHub OAuth 서버 |
+| Resource Server | 보호된 자원을 제공 | GitHub API (사용자 정보) |
+
+### Authorization Code Flow
+
+가장 널리 쓰이는 방식이다. 
+
+Access Token이 브라우저에 직접 노출되지 않아 보안상 유리하다.
+
+<Mermaid chart={`sequenceDiagram
+    participant User as Resource Owner
+    participant Browser as Browser
+    participant Client as Client (AIew)
+    participant Auth as Authorization Server (GitHub)
+    participant Resource as Resource Server (GitHub API)
+
+    User->>Browser: 1. 로그인 버튼 클릭
+    Browser->>Client: 2. /api/v1/oauth2/github 요청
+    Client->>Browser: 3. GitHub 인증 페이지로 리다이렉트
+    Browser->>Auth: 4. 인증 페이지 접속
+    User->>Auth: 5. 로그인 및 권한 승인
+    Auth->>Browser: 6. Authorization Code와 함께 콜백 URL로 리다이렉트
+    Browser->>Client: 7. /callback?code=xxx&state=yyy
+    Client->>Auth: 8. Authorization Code로 Access Token 요청
+    Auth->>Client: 9. Access Token 발급
+    Client->>Resource: 10. Access Token으로 사용자 정보 요청
+    Resource->>Client: 11. 사용자 정보 반환
+    Client->>Browser: 12. JWT 발급 및 쿠키 설정`} />
+
+핵심은 **6~8단계**다. 
+
+Authorization Code는 브라우저를 거쳐 전달되지만, 실제 Access Token 교환은 Client와 Authorization Server 사이에서 직접 이루어진다.
+
+이 구조 덕분에 Access Token이 브라우저 히스토리나 로그에 남지 않는다.
+
+하지만 이 흐름에도 공격 포인트가 존재한다. 
+
+다음 섹션에서 각 단계별 보안 위협과 방어 메커니즘을 살펴보자.
+
+## OAuth2.0 보안 위협과 방어
+
+---
+
+Authorization Code Flow는 안전한 편이지만, 여전히 공격 포인트가 존재한다.
+
+각 위협과 방어 메커니즘을 공개되어있는 `@fastify/oauth2` 소스코드와 함께 살펴보자.
+
+### **CSRF 공격과 state 파라미터**
+
+**공격 시나리오**
+
+1. 공격자가 자신의 GitHub 계정으로 OAuth 인증을 시작한다
+
+1. 콜백 URL(`/callback?code=공격자코드`)을 얻은 뒤, 인증을 완료하지 않고 멈춘다
+
+1. 이 URL을 피해자에게 보낸다 (이메일, 메시지 등)
+
+1. 피해자가 링크를 클릭하면, 피해자의 브라우저에서 공격자의 Authorization Code로 인증이 완료된다
+
+1. 결과: 피해자의 세션이 공격자의 계정과 연결됨
+
+**방어: state 파라미터**
+
+`@fastify/oauth2`는 이를 자동으로 처리한다.
+
+```javascript
+// 생성: 16바이트 랜덤 문자열
+function defaultGenerateStateFunction (_request, callback) {
+  callback(null, random(16))
+}
+
+// 검증: 쿠키에 저장한 값과 콜백으로 돌아온 값 비교
+function defaultCheckStateFunction (request, callback) {
+  const state = request.query.state
+  const stateCookie = request.cookies[this.redirectStateCookieName]
+  if (stateCookie && state === stateCookie) {
+    callback()
+    return
+  }
+  callback(new Error('Invalid state'))
+}
+```
+
+흐름은 이렇다:
+
+1. 인증 요청 시 → 랜덤 state 생성 → 쿠키에 저장 + Authorization URL에 포함
+
+1. 콜백 시 → URL의 state와 쿠키의 state 비교
+
+1. 불일치 → 요청 거부
+
+공격자가 만든 URL에는 공격자 브라우저의 state가 포함되어 있다. 
+
+피해자 브라우저의 쿠키에는 다른 state가 있거나 아예 없으므로, 검증에 실패한다.
+
+### Authorization Code 탈취와 PKCE
+
+**공격 시나리오 (특히 Public Client 환경)**
+
+모바일 앱이나 SPA처럼 Client Secret을 안전하게 보관할 수 없는 환경을 Public Client라고 한다. 
+
+이런 환경에서는 Authorization Code만으로 Access Token을 요청할 수 있어 탈취 위험이 크다.
+
+1. 피해자가 정상적으로 OAuth 인증을 진행한다
+
+1. Authorization Server가 콜백 URL로 리다이렉트한다 (`/callback?code=xxx`)
+
+1. 공격자가 이 code를 가로챈다
+
+1. 공격자가 탈취한 code로 Access Token을 요청한다
+
+1. 결과: 공격자가 피해자의 Access Token을 획득
+
+특히 모바일 앱에서는 Custom URI Scheme을 콜백 URL로 사용하는데, 악성 앱이 동일한 Scheme을 등록해 Authorization Code를 가로채는 방식이 PKCE가 제안된 주요 배경이다.
+
+**방어: PKCE (Proof Key for Code Exchange)**
+
+`@fastify/oauth2`의 PKCE 구현을 보자.
+
+```javascript
+const codeVerifier = random
+const codeChallenge = verifier => 
+  createHash('sha256').update(verifier).digest('base64url')
+
+// 인증 요청 시
+let pkceParams = {}
+if (configured.pkce) {
+  const verifier = codeVerifier()
+  const challenge = configured.pkce === 'S256' 
+    ? codeChallenge(verifier) // SHA256 해시
+    : verifier                // plain은 그대로
+  pkceParams = {
+    code_challenge: challenge,
+    code_challenge_method: configured.pkce
+  }
+  reply.setCookie(verifierCookieName, verifier, cookieOpts)  // 원본은 쿠키에
+}
+
+// 토큰 교환 시
+const pkceParams = configured.pkce 
+  ? { code_verifier: request.cookies[verifierCookieName] } 
+  : {}
+```
+
+흐름은 이렇다:
+
+<Mermaid chart={`sequenceDiagram
+    participant Client as Client
+    participant Auth as Authorization Server
+
+    Note over Client: verifier 생성 (랜덤)
+    Note over Client: challenge = SHA256(verifier)
+    Client->>Auth: 1. 인증 요청 + code_challenge
+    Auth->>Client: 2. Authorization Code 발급
+    Client->>Auth: 3. Token 요청 + code + code_verifier
+    Note over Auth: SHA256(verifier) == challenge 검증
+    Auth->>Client: 4. Access Token 발급`} />
+
+공격자가 Authorization Code를 탈취해도, `code_verifier`는 피해자 브라우저의 쿠키에만 있다. 
+
+공격자는 verifier 없이 Token을 요청할 수 없다.
+
+**설정 방식에 따른 PKCE 활성화**
+
+`@fastify/oauth2`는 두 가지 설정 방식을 제공한다.
+
+| 방식 | PKCE 처리 |
+| --- | --- |
+| `discovery: { issuer: '...' }` | Authorization Server 메타데이터 기반 자동 활성화 |
+| `auth: oauthPlugin.GITHUB_CONFIGURATION` | 수동 설정 필요 (`pkce: 'S256'`) |
+
+`discovery`를 쓰면 Authorization Server의 `/.well-known/openid-configuration`에서 지원하는 PKCE 방식을 자동으로 감지한다. 
+
+하지만 GitHub처럼 정적 설정을 쓰는 경우, PKCE는 자동 활성화되지 않는다. 
+
+provider가 PKCE를 지원하는지 확인하고, 명시적으로 옵션을 켜야 한다.
+
+### 내가 놓친 것: PKCE 미적용
+
+내 코드를 다시 보자.
+
+```typescript
+// github-oauth2.plugin.ts
+fastify.register(oauthPlugin, {
+  name: 'githubOAuth2',
+  scope: ['read:user', 'user:email'],
+  credentials: {
+    client: {
+      id: process.env.GITHUB_CLIENT_ID as string,
+      secret: process.env.GITHUB_CLIENT_SECRET as string,
+    },
+    auth: oauthPlugin.GITHUB_CONFIGURATION,
+  },
+  startRedirectPath: redirectPath,
+  callbackUri: `${process.env.OAUTH_CALLBACK_BASE_URL}${callbackPath}`,
+  // pkce: 'S256' ← 이게 없다!
+})
+```
+
+`@fastify/oauth2`는 PKCE를 지원하지만, `discovery` 옵션 없이 정적 설정(`GITHUB_CONFIGURATION`)을 쓰면 자동 활성화되지 않는다. 
+
+GitHub이 PKCE를 강제하지 않아서 동작은 하지만, 보안 모범 사례는 아니다.
+
+**수정:**
+
+```typescript
+fastify.register(oauthPlugin, {
+  name: 'githubOAuth2',
+  scope: ['read:user', 'user:email'],
+  pkce: 'S256',  // 추가
+  credentials: { ... },
+  // ...
+})
+```
+
+## JWT 보안
+
+---
+
+OAuth2.0으로 사용자 인증을 마쳤다면, 이후 요청에서는 JWT로 인가를 처리하는 경우가 많다. 
+
+AIew에서도 `@fastify/jwt`를 사용해 Access Token과 Refresh Token을 발급했다.
+
+JWT도 마찬가지로 라이브러리가 많은 것을 처리해주지만, 어떤 공격을 막고 있는지 이해하는 게 중요하다.
+
+`@fastify/jwt`가 내부적으로 사용하는 `fast-jwt` 소스코드를 살펴보자.
+
+### alg: "none" 공격
+
+**공격 시나리오**
+
+JWT 헤더에는 서명 알고리즘을 지정하는 `alg` 필드가 있다. 
+
+공격자가 이 값을 `"none"`으로 바꾸고 서명을 제거하면, 일부 구현에서는 서명 검증 없이 토큰을 수락해버린다.
+
+```json
+// 원본 헤더
+{ "alg": "HS256", "typ": "JWT" }
+
+// 조작된 헤더
+{ "alg": "none", "typ": "JWT" }
+```
+
+**방어: 알고리즘 화이트리스트**
+
+`fast-jwt`의 `verifier.js`를 보자.
+
+```javascript
+function validateAlgorithmAndSignature(input, header, signature, key, allowedAlgorithms) {
+  // 토큰의 alg가 허용 목록에 있는지 먼저 확인
+  if (!allowedAlgorithms.includes(header.alg)) {
+    throw new TokenError(TokenError.codes.invalidAlgorithm, 'The token algorithm is invalid.')
+  }
+
+  // 서명 검증
+  if (signature && !verifySignature(header.alg, key, input, signature)) {
+    throw new TokenError(TokenError.codes.invalidSignature, 'The token signature is invalid.')
+  }
+}
+```
+
+핵심은 **토큰이 주장하는 알고리즘을 그대로 믿지 않는다**는 것이다. 서버가 설정한 `allowedAlgorithms`에 없으면 거부한다. `"none"`은 당연히 허용 목록에 없으므로 공격이 차단된다.
+
+### 알고리즘 혼동 공격
+
+**공격 시나리오**
+
+RS256(비대칭키)으로 서명된 토큰을 검증하는 서버가 있다고 하자. 
+
+공격자가:
+
+1. 서버의 RSA 공개키를 획득한다 (공개키는 말 그대로 공개되어 있다)
+
+1. 토큰 헤더의 `alg`를 `HS256`(대칭키)으로 변경한다
+
+1. 공개키를 HMAC의 secret으로 사용해 서명한다
+
+만약 서버가 토큰의 `alg` 값을 그대로 따른다면, 공개키로 HMAC 검증을 시도하고 성공해버린다.
+
+**방어: 키 타입별 알고리즘 분리**
+
+`fast-jwt`의 `crypto.js`를 보자.
+
+```javascript
+const hsAlgorithms = ['HS256', 'HS384', 'HS512']
+const rsaAlgorithms = ['RS256', 'RS384', 'RS512', 'PS256', 'PS384', 'PS512']
+const esAlgorithms = ['ES256', 'ES384', 'ES512']
+const edAlgorithms = ['EdDSA']
+```
+
+그리고 `verifier.js`에서 키 타입에 맞는 알고리즘만 허용한다.
+
+```javascript
+// 키에서 허용 가능한 알고리즘 자동 감지
+const availableAlgorithms = detectPublicKeyAlgorithms(key)
+
+if (allowedAlgorithms.length) {
+  checkAreCompatibleAlgorithms(allowedAlgorithms, availableAlgorithms)
+} else {
+  allowedAlgorithms = availableAlgorithms  // 키 타입에 맞는 것만 허용
+}
+```
+
+RSA 공개키를 설정하면 `rsaAlgorithms`만 허용된다. 
+
+공격자가 `HS256`으로 바꿔도 허용 목록에 없어서 거부된다.
+
+### Timing Attack과 timingSafeEqual
+
+**공격 시나리오**
+
+서명 검증 시 문자열 비교를 일반적인 방식(`===`)으로 하면, 불일치가 발생한 위치에 따라 비교 시간이 달라진다. 
+
+공격자는 이 시간 차이를 측정해 올바른 서명을 한 글자씩 추측할 수 있다.
+
+**방어: 상수 시간 비교**
+
+`fast-jwt`의 `crypto.js`에서 HMAC 서명 검증 부분을 보자.
+
+```javascript
+if (type === 'HS') {
+  try {
+    return timingSafeEqual(
+      createHmac(alg, key).update(input).digest(), 
+      signature
+    )
+  } catch {
+    return false
+  }
+}
+```
+
+`timingSafeEqual`은 입력 길이와 관계없이 항상 일정한 시간에 비교를 완료한다. 
+
+시간 차이로 정보가 유출되지 않는다.
+
+### 서명 없는 토큰 거부
+
+```javascript
+function verifyToken(key, { input, header, payload, signature }, ...) {
+  const hasKey = key instanceof Buffer ? key.length : !!key
+
+  if (hasKey && !signature) {
+    throw new TokenError(TokenError.codes.missingSignature, 'The token signature is missing.')
+  } else if (!hasKey && signature) {
+    throw new TokenError(TokenError.codes.missingKey, 'The key option is missing.')
+  }
+  // ...
+}
+```
+
+키가 설정되어 있는데 서명이 없거나, 서명이 있는데 키가 없으면 모두 에러로 처리한다.
+
+### 내가 놓친 것: algorithms 미작성
+
+내 JWT 설정 코드를 보자.
+
+```typescript
+// jwt.plugin.ts
+fastify.register(jwt, {
+  secret: process.env.JWT_SECRET as string,
+  cookie: {
+    cookieName: 'accessToken',
+    signed: false,
+  },
+  // verify: { algorithms: ['HS256'] } ← 이게 없다!
+})
+```
+
+`fast-jwt`가 키 타입에서 알고리즘을 자동 감지하긴 하지만, 명시적으로 지정하는 게 모범 사례다.
+
+**수정:**
+
+```typescript
+fastify.register(jwt, {
+  secret: process.env.JWT_SECRET as string,
+  sign: { algorithm: 'HS256' },
+  verify: { algorithms: ['HS256'] },  // 추가
+  cookie: {
+    cookieName: 'accessToken',
+    signed: false,
+  },
+})
+```
+
+## 토큰 저장과 전송
+
+---
+
+JWT를 발급했으면 클라이언트에 전달하고 이후 요청에서 사용해야 한다. 
+
+저장 위치와 전송 방식에 따라 공격 벡터가 달라진다.
+
+### localStorage vs HttpOnly Cookie
+
+| 방식 | XSS 취약 | CSRF 취약 | SSR 호환 |
+| --- | --- | --- | --- |
+| localStorage | ⚠️ 취약 | ✅ 안전 | ❌ 불가 |
+| HttpOnly Cookie | ✅ 안전 | ⚠️ 취약 | ✅ 가능 |
+
+**localStorage**는 JavaScript로 자유롭게 접근할 수 있다. 
+
+XSS 공격이 성공하면 토큰이 바로 탈취된다. 
+
+또한 브라우저에서만 접근 가능하므로 SSR 환경에서는 사용할 수 없다.
+
+**HttpOnly Cookie**는 JavaScript에서 접근할 수 없다. 
+
+XSS로 토큰 자체를 훔칠 수는 없지만, 쿠키가 자동으로 전송되므로 CSRF 공격에 노출될 수 있다.
+
+나는 HttpOnly Cookie를 선택했다. 
+
+AIew의 프론트엔드가 Next.js 기반이라 SSR을 사용하는데, 서버 사이드에서 인증 상태를 확인하려면 쿠키가 필수였다. 
+
+보안 측면에서도 XSS는 한 번 뚫리면 토큰이 완전히 탈취되지만, CSRF는 `sameSite` 옵션 등 추가적인 방어 수단이 있어서 관리가 더 수월하다.
+
+### 쿠키 보안 옵션
+
+내 콜백 핸들러 코드를 보자.
+
+```typescript
+// oauth2/github/callback/controller.ts
+reply
+  .setCookie('accessToken', accessToken, {
+    path: '/',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 15 * 60, // 15분
+  })
+  .setCookie('refreshToken', refreshToken, {
+    path: '/',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60, // 7일
+  })
+```
+
+각 옵션의 역할:
+
+| 옵션 | 값 | 역할 |
+| --- | --- | --- |
+| httpOnly | true | JavaScript 접근 차단 (XSS 방어) |
+| secure | production에서 true | HTTPS에서만 쿠키 전송 (중간자 공격 방어) |
+| sameSite | lax | 다른 사이트에서의 POST 요청에 쿠키 미포함 (CSRF 방어) |
+| maxAge | 토큰별 상이 | Access Token은 짧게, Refresh Token은 길게 |
+
+`sameSite: 'lax'`는 다른 사이트에서 링크를 클릭해 GET 요청으로 들어오는 경우에는 쿠키를 보내지만, POST/PUT/DELETE 같은 상태 변경 요청에는 쿠키를 보내지 않는다. 
+
+대부분의 CSRF 공격을 막으면서도 정상적인 내비게이션은 허용한다.
+
+## 마무리
+
+---
+
+면접에서 제대로 답하지 못했던 질문들을 계기로, 라이브러리 소스코드를 직접 뜯어보며 OAuth2.0과 JWT의 보안 메커니즘을 정리했다.
+
+### 라이브러리가 해주는 것 vs 내가 해야 하는 것
+
+| 보안 위협 | 방어 메커니즘 | 라이브러리 처리 | 개발자 설정 |
+| --- | --- | --- | --- |
+| CSRF | state 파라미터 | ✅ 자동 | - |
+| Authorization Code 탈취 | PKCE | ⚙️ 지원 | `pkce: 'S256'` 명시 필요 |
+| alg: "none" 공격 | 알고리즘 화이트리스트 | ✅ 자동 | - |
+| 알고리즘 혼동 공격 | 키 타입별 알고리즘 분리 | ✅ 자동 | `algorithms` 명시 권장 |
+| Timing Attack | 상수 시간 비교 | ✅ 자동 | - |
+| XSS로 토큰 탈취 | HttpOnly Cookie | - | ✅ 직접 구현 |
+| CSRF로 요청 위조 | sameSite Cookie | - | ✅ 직접 구현 |
+
+라이브러리가 많은 것을 자동으로 처리해주지만, **"할 수 있는 것"과 "자동으로 해주는 것"은 다르다**. 
+
+PKCE처럼 옵션을 명시해야만 활성화되는 경우도 있고, 쿠키 보안 설정처럼 개발자가 직접 구현해야 하는 부분도 있다.
+
+결국 중요한 건 **왜 이런 코드가 필요한지 이해하는 것**이다. 
+
+라이브러리를 신뢰하되, 그 안에서 어떤 보안 메커니즘이 작동하는지 알아야 설정을 빠뜨리지 않고, 면접에서도 제대로 답할 수 있다.
+
+## 관련 자료
+
+---
+
+| 자료 | 링크 |
+| --- | --- |
+| @fastify/oauth2 GitHub | [https://github.com/fastify/fastify-oauth2](https://github.com/fastify/fastify-oauth2) |
+| @fastify/jwt GitHub | [https://github.com/fastify/fastify-jwt](https://github.com/fastify/fastify-jwt) |
+| fast-jwt GitHub | [https://github.com/nearform/fast-jwt](https://github.com/nearform/fast-jwt) |
+| RFC 6749 - OAuth 2.0 | [https://datatracker.ietf.org/doc/html/rfc6749](https://datatracker.ietf.org/doc/html/rfc6749) |
+| RFC 7636 - PKCE | [https://datatracker.ietf.org/doc/html/rfc7636](https://datatracker.ietf.org/doc/html/rfc7636) |
+| RFC 7519 - JWT | [https://datatracker.ietf.org/doc/html/rfc7519](https://datatracker.ietf.org/doc/html/rfc7519) |

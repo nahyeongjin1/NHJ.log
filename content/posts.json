@@ -1,5 +1,24 @@
 [
   {
+    "id": "2eabdc82-a936-8068-91b8-c4b02df23a4c",
+    "title": "면접에서 털리며 이해한 OAuth2.0 + JWT 인증의 진짜 흐름",
+    "slug": "oauth2-jwt-behind-the-library",
+    "excerpt": "@fastify/oauth2와 fast-jwt 소스코드를 직접 뜯어보며 정리한 OAuth2.0 + JWT 보안의 실제 흐름",
+    "tags": [
+      "OAuth2.0",
+      "JWT",
+      "Fastify",
+      "Node.js",
+      "Security"
+    ],
+    "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2eabdc82-a936-8068-91b8-c4b02df23a4c/thumbnail.png",
+    "published": true,
+    "createdAt": "2026-01-16T09:58:00.000Z",
+    "updatedAt": "2026-01-16T12:34:00.000Z",
+    "relatedProject": "2cebdc82-a936-8005-beca-e1a9eaddbce6",
+    "readingTime": 10
+  },
+  {
     "id": "2e7bdc82-a936-8065-862a-d7109eb9c01b",
     "title": "Trailing Slash 버그로 배운 RRv7 prerender와 Netlify의 동작 방식",
     "slug": "react-router-prerender-netlify-trailing-slash",
