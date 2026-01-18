@@ -10,7 +10,7 @@ const sessionStorage = createCookieSessionStorage({
       domain: 'hyeongjin.me',
     }),
     path: '/',
-    httpOnly: true,
+    httpOnly: false,
     sameSite: 'lax',
     secrets: [process.env.SESSION_SECRET || 'dev-secret-please-change'],
     // HTTPS 환경(프로덕션)에서만 secure 활성화
