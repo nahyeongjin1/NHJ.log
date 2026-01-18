@@ -1,0 +1,80 @@
+diff --git a/node_modules/remix-themes/dist/index.js b/node_modules/remix-themes/dist/index.js
+index ca2c00a..00cb7c2 100644
+--- a/node_modules/remix-themes/dist/index.js
++++ b/node_modules/remix-themes/dist/index.js
+@@ -84,6 +84,24 @@ ThemeContext.displayName = "ThemeContext";
+ var prefersLightMQ = "(prefers-color-scheme: light)";
+ var getPreferredTheme = () => window.matchMedia(prefersLightMQ).matches ? "light" /* LIGHT */ : "dark" /* DARK */;
+ var mediaQuery = typeof window !== "undefined" ? window.matchMedia(prefersLightMQ) : null;
++
++var THEME_COOKIE_NAME = "__remix-themes-client";
++
++var setThemeCookie = (theme) => {
++  if (typeof document === "undefined") return;
++  if (theme === null) {
++    document.cookie = `${THEME_COOKIE_NAME}=; path=/; max-age=0`;
++  } else {
++    document.cookie = `${THEME_COOKIE_NAME}=${theme}; path=/; max-age=31536000; SameSite=Lax`;
++  }
++};
++
++var getThemeFromCookie = () => {
++  if (typeof document === "undefined") return null;
++  const match = document.cookie.match(new RegExp(`(^| )${THEME_COOKIE_NAME}=([^;]+)`));
++  const value = match ? match[2] : null;
++  return isTheme(value) ? value : null;
++};
+ function ThemeProvider({
+   children,
+   specifiedTheme,
+@@ -98,9 +116,10 @@ function ThemeProvider({
+       return themes.includes(specifiedTheme) ? specifiedTheme : null;
+     }
+     if (typeof window !== "object") return null;
+-    return getPreferredTheme();
++    // For prerendered pages: read from cookie first, fallback to system preference
++    return getThemeFromCookie() ?? getPreferredTheme();
+   });
+-  const [themeDefinedBy, setThemeDefinedBy] = useState(specifiedTheme ? "USER" : "SYSTEM");
++  const [themeDefinedBy, setThemeDefinedBy] = useState(specifiedTheme || getThemeFromCookie() ? "USER" : "SYSTEM");
+   const broadcastThemeChange = useBroadcastChannel("remix-themes", (e) => {
+     ensureCorrectTransition(() => {
+       console.log("broadcastThemeChange", disableTransitionOnThemeChange);
+@@ -131,6 +150,7 @@ function ThemeProvider({
+           setThemeDefinedBy("SYSTEM");
+           broadcastThemeChange({ theme: preferredTheme, definedBy: "SYSTEM" });
+         });
++        setThemeCookie(null);
+         fetch(`${themeAction}`, {
+           method: "POST",
+           body: JSON.stringify({ theme: null })
+@@ -141,6 +161,7 @@ function ThemeProvider({
+           setThemeDefinedBy("USER");
+         });
+         broadcastThemeChange({ theme: nextTheme, definedBy: "USER" });
++        setThemeCookie(nextTheme);
+         fetch(`${themeAction}`, {
+           method: "POST",
+           body: JSON.stringify({ theme: nextTheme })
+@@ -157,9 +178,18 @@ function ThemeProvider({
+ }
+ var clientThemeCode = String.raw`
+ (() => {
+-  const theme = window.matchMedia(${JSON.stringify(prefersLightMQ)}).matches
+-    ? 'light'
+-    : 'dark';
++  // Read theme from cookie first, fallback to system preference
++  const getThemeFromCookie = () => {
++    const match = document.cookie.match(new RegExp('(^| )${THEME_COOKIE_NAME}=([^;]+)'));
++    const value = match ? match[2] : null;
++    return value === 'light' || value === 'dark' ? value : null;
++  };
++
++  const getSystemTheme = () =>
++    window.matchMedia(${JSON.stringify(prefersLightMQ)}).matches ? 'light' : 'dark';
++
++  const cookieTheme = getThemeFromCookie();
++  const theme = cookieTheme ?? getSystemTheme();
+ 
+   const cl = document.documentElement.classList;
+   const dataAttr = document.documentElement.dataset.theme;
