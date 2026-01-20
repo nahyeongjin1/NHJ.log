@@ -12,33 +12,5 @@ export default defineConfig({
       plugins: [tailwindcss, autoprefixer],
     },
   },
-  plugins: [
-    reactRouter(),
-    tsconfigPaths(),
-    netlifyReactRouter(),
-    netlify(),
-    {
-      name: 'add-server-build-to-input',
-      enforce: 'post',
-      config(config, { command, isSsrBuild }) {
-        if (isSsrBuild && command === 'build') {
-          const currentInput = config.build?.rollupOptions?.input;
-          console.log('[prerender-fix] Current input:', currentInput);
-
-          if (currentInput && typeof currentInput === 'object') {
-            return {
-              build: {
-                rollupOptions: {
-                  input: {
-                    ...currentInput,
-                    'server-build': 'virtual:react-router/server-build',
-                  },
-                },
-              },
-            };
-          }
-        }
-      },
-    },
-  ],
+  plugins: [reactRouter(), tsconfigPaths(), netlifyReactRouter(), netlify()],
 });
