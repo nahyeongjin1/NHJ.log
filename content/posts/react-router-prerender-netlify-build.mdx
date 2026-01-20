@@ -2,7 +2,7 @@
 title: 'React Router v7 Pre-render + Netlify 호환 이슈 해결 과정'
 excerpt: 'React Router v7의 prerender 기능이 Netlify에서 동작하지 않는 원인을 파악하고 오픈소스에 기여한 경험'
 createdAt: '2025-12-29T03:01:00.000Z'
-updatedAt: '2025-12-29T06:34:00.000Z'
+updatedAt: '2026-01-20T05:48:00.000Z'
 tags: ['React Router v7', 'Netlify', 'Vite', 'Open Source', 'SSG']
 thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d8bdc82-a936-80d5-a9ea-cd644158618f/thumbnail.png'
 ---
@@ -16,7 +16,7 @@ thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d8
 
 1. 원인: Netlify 플러그인이 rollupOptions.input을 덮어써서 server-build가 manifest에서 제외됨
 
-1. 해결: enforce: 'post' 플러그인으로 우회 후, 근본 수정을 위해 Netlify 플러그인에 PR 제출
+1. 해결: enforce: 'post' 플러그인으로 우회 후, Netlify 플러그인에 PR 기여 → **v2.1.3에 반영됨**
 </Callout>
 
 ## 배경: Pre-rendering(SSG)란?
@@ -96,6 +96,8 @@ export default defineConfig(({ isSsrBuild }) => ({
 Netlify 환경에서는 플러그인이 이 설정을 덮어쓰기 때문에 동일한 에러 발생.
 
 ### 시도 2: enforce: 'post' 플러그인 (성공)
+
+**⚠️ v2.1.3 이후로는 이 workaround가 필요 없음**
 
 `enforce: 'post'`를 사용해 Netlify 플러그인 **이후에** `server-build`를 input에 추가:
 
@@ -178,6 +180,26 @@ config.build.rollupOptions.input = {
 
 > 향후 React Router 팀에서 Vite Preview Server 방식으로 공식 지원 예정 ([RFC #14651](https://github.com/remix-run/react-router/discussions/14651))
 
+### 후속 진행
+
+PR #607은 GitHub Actions 워크플로우 권한 문제로 인해 외부 기여자가 직접 CI를 실행할 수 없어 닫혔다.
+
+하지만 메인테이너(Philippe Serhal)가 PR #620을 새로 생성하면서:
+
+- 내 커밋을 체리픽하여 포함
+
+- 코드를 더 견고하게 개선 (rollup input 병합 로직 분리, 테스트 커버리지 추가)
+
+- PR 본문에 "Inspired by #606 (thank you @nahyeongjin1!)" 언급
+
+**2026년 1월 19일, PR #620이 머지되었다!** 🎉
+
+- **PR**: https://github.com/netlify/remix-compute/pull/620
+
+이제 workaround 없이 깔끔한 설정으로 prerender가 동작한다:
+
+<Image src="https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d8bdc82-a936-80d5-a9ea-cd644158618f/2eebdc82-a936-80d0-8f31-d4b32cbd2dcb.png" />
+
 ## 관련 자료
 
 ---
@@ -192,3 +214,4 @@ config.build.rollupOptions.input = {
 | [PR #14650](https://github.com/remix-run/react-router/pull/14650) | Preview Server 구현 (리뷰 대기) |
 | [Netlify #606](https://github.com/netlify/remix-compute/issues/606) | Netlify 플러그인 이슈 |
 | [Netlify #607](https://github.com/netlify/remix-compute/pull/607) | Netlify 플러그인 수정 PR |
+| [Netlify #620](https://github.com/netlify/remix-compute/pull/620) | Netlify 플러그인 수정 PR **(머지됨 ✅)** |
