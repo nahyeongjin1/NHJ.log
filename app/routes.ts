@@ -1,4 +1,9 @@
-import { type RouteConfig, index, route } from '@react-router/dev/routes';
+import {
+  type RouteConfig,
+  index,
+  route,
+  prefix,
+} from '@react-router/dev/routes';
 import { routes as mdxRoutes } from 'react-router-mdx/server';
 
 export default [
@@ -8,8 +13,10 @@ export default [
   route('projects', 'routes/projects.tsx'),
   route('bookmarks', 'routes/bookmarks.tsx'),
   route('about', 'routes/about.tsx'),
-  route('api/set-theme', 'routes/api/set-theme.ts'),
-  route('api/test-notion', 'routes/api/test-notion.ts'),
-  route('api/comments', 'routes/api/comments.ts'),
-  route('api/auth/*', 'routes/api/auth.$.ts'),
+  ...prefix('api', [
+    route('set-theme', 'routes/api/set-theme.ts'),
+    route('test-notion', 'routes/api/test-notion.ts'),
+    route('comments', 'routes/api/comments.ts'),
+    route('auth/*', 'routes/api/auth.$.ts'),
+  ]),
 ] satisfies RouteConfig;
