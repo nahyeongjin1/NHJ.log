@@ -1,5 +1,20 @@
 [
   {
+    "id": "306bdc82-a936-808d-9867-f9e2fd579db2",
+    "title": "무신사 AI Native Engineer 1차 코딩테스트 회고",
+    "slug": "musinsa-rookie-1",
+    "excerpt": "1차 코딩테스트에서 풀었던 2개의 문제들을 하나씩 살펴보며 준비 과정에서의 고민과 실제 서비스 관점으로의 전환",
+    "tags": [
+      "Problem Solving",
+      "Python"
+    ],
+    "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/306bdc82-a936-808d-9867-f9e2fd579db2/thumbnail.png",
+    "published": true,
+    "createdAt": "2026-02-13T09:02:00.000Z",
+    "updatedAt": "2026-02-14T10:22:00.000Z",
+    "readingTime": 6
+  },
+  {
     "id": "2eabdc82-a936-8068-91b8-c4b02df23a4c",
     "title": "면접에서 털리며 이해한 OAuth2.0 + JWT 인증의 진짜 흐름",
     "slug": "oauth2-jwt-behind-the-library",
@@ -85,7 +100,7 @@
     "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2cebdc82-a936-804e-8b53-f19167685081/thumbnail.png",
     "published": true,
     "createdAt": "2025-12-19T09:14:00.000Z",
-    "updatedAt": "2025-12-28T06:43:00.000Z",
+    "updatedAt": "2026-01-20T06:17:00.000Z",
     "relatedProject": "2cebdc82-a936-8005-beca-e1a9eaddbce6",
     "readingTime": 6
   }
