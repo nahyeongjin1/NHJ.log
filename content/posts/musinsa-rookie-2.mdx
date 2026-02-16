@@ -2,7 +2,7 @@
 title: '무신사 AI Native Engineer 2차 코딩테스트 회고'
 excerpt: '3시간 안에 NestJS + TypeORM + PostgreSQL로 수강신청 API를 구현하며 Claude Code를 활용한 과정과, 동시성 제어에서 놓친 부분을 되짚어본다.'
 createdAt: '2026-02-14T10:23:00.000Z'
-updatedAt: '2026-02-16T08:30:00.000Z'
+updatedAt: '2026-02-16T08:42:00.000Z'
 tags: ['Claude Code', 'NestJS', 'TypeORM', 'PostgreSQL', 'Concurrency', 'Docker Compose']
 thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/307bdc82-a936-8004-a1db-e0be273d1ecf/thumbnail.webp'
 ---
@@ -45,16 +45,8 @@ thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/307
 
 ### Claude Code를 쓴 이유
 
-무신사에서 Codex를 무료로 제공해줬지만, 평소에 쓰던 Claude Code를 선택했다. 
-3시간이라는 제한 안에서 새 도구를 익히는 리스크보다 익숙한 도구의 효율을 택한 판단이었다.
-
-Claude Code를 좋아하는 이유가 몇 가지 있다:
-
-- `.claude` 폴더 기반의 문서화 — `CLAUDE.md`에 프로젝트 지침을 적어두면 매 대화에서 자동으로 컨텍스트에 포함된다
-
-- `@` 링크로 필요한 문서만 선택적으로 불러올 수 있어서 불필요한 컨텍스트 누적을 막을 수 있다
-
-- 터미널 네이티브 — 윈도우 환경이지만 WSL에서 모든 작업을 하는 나한테 안정감을 주는 환경이다
+무신사에서 Codex를 무료로 제공해줬지만, 3시간이라는 제한 안에서 새 도구를 익히는 리스크를 감수할 이유가 없었다. 
+Claude Code는 평소에 쓰던 도구라 작업 흐름이 이미 잡혀 있었고, 특히 CLAUDE.md 기반의 컨텍스트 관리, `@` 링크로 필요한 문서만 선택적으로 불러오는 기능, 그리고 터미널 네이티브 환경이 이번 시험의 2개 세션 분리 전략을 실행하는 데 적합했다.
 
 ### 처음 추천 받은 기술 스택
 
@@ -130,11 +122,7 @@ auto accept를 쓰지 않기 때문에 (모든 도구 호출을 직접 승인), 
 
 ### MCP로 공식 문서 참조
 
-Claude Code에 Context7 MCP를 연결해서 사용했다. 
-Context7은 라이브러리의 공식 문서를 실시간으로 조회할 수 있는 MCP 서버다. 
-사용 여부를 자주 언급해주면 사용할 가능성이 높아지므로 CLAUDE.md에도 명시해두었다.
-
-<Image src="https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/307bdc82-a936-8004-a1db-e0be273d1ecf/309bdc82-a936-80a3-858d-d0b3bbb2cdd6.png" />
+Claude Code에 Context7 MCP를 연결해서 라이브러리 공식 문서를 실시간으로 참조할 수 있게 했다.
 
 Context7의 덕을 본 순간이 여럿 있었지만 하나만 꼽아보았다.
 e2e 테스트에서 테스트 간 데이터를 정리하기 위해 AI가 `repository.delete({})`를 작성했는데, 테스트를 실행하니 다음과 같은 에러가 발생했다.
