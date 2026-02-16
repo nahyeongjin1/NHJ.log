@@ -2,7 +2,7 @@
 title: '무신사 AI Native Engineer 2차 코딩테스트 회고'
 excerpt: '3시간 안에 NestJS + TypeORM + PostgreSQL로 수강신청 API를 구현하며 Claude Code를 활용한 과정과, 동시성 제어에서 놓친 부분을 되짚어본다.'
 createdAt: '2026-02-14T10:23:00.000Z'
-updatedAt: '2026-02-16T08:42:00.000Z'
+updatedAt: '2026-02-16T08:57:00.000Z'
 tags: ['Claude Code', 'NestJS', 'TypeORM', 'PostgreSQL', 'Concurrency', 'Docker Compose']
 thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/307bdc82-a936-8004-a1db-e0be273d1ecf/thumbnail.webp'
 ---
@@ -229,8 +229,8 @@ const course = await queryRunner.manager.findOne(Course, {
 학생 A (현재 15학점), 동시에 강좌 X(3학점)와 강좌 Y(3학점) 신청
 
 요청1 (강좌 X)                    요청2 (강좌 Y)
-─────────────                    ─────────────
-BEGIN                            BEGIN
+─────────────                     ─────────────
+BEGIN                             BEGIN
 Student 조회 (락 없음)            Student 조회 (락 없음)
 Course X FOR UPDATE               Course Y FOR UPDATE  ← 서로 다른 row라 대기 없음
 학점 확인: 15+3=18 ≤ 18 ✓         학점 확인: 15+3=18 ≤ 18 ✓  ← 요청1의 INSERT가 아직 미커밋
