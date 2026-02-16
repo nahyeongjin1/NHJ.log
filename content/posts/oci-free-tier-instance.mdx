@@ -2,7 +2,7 @@
 title: 'OCI Free Tier 인스턴스 확보 삽질기'
 excerpt: 'AI 서버의 도커 이미지 크기가 너무 커져 Azure VM에서 OCI instance로 마이그레이션 하기 위한 여정'
 createdAt: '2025-12-19T09:14:00.000Z'
-updatedAt: '2026-01-20T06:17:00.000Z'
+updatedAt: '2026-02-16T09:30:00.000Z'
 tags: ['Infra', 'Script', 'Cron Job', 'GIthub Actions']
 thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2cebdc82-a936-804e-8b53-f19167685081/thumbnail.png'
 ---
@@ -23,9 +23,11 @@ thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2ce
 
 ### AIew와 Azure VM 비용 문제
 
-AIew는 AI 기반 실시간 면접 연습 서비스인데, FER(Facial Expression Recognition) 같은 로컬 AI 모델을 사용하고 있다. 이미지 빌드 최적화를 해도 ai-server의 컨테이너만 10GB가 넘어간다.
+AIew는 AI 기반 실시간 면접 연습 서비스인데, FER(Facial Expression Recognition) 같은 로컬 AI 모델을 사용하고 있다.   
+이미지 빌드 최적화를 해도 ai-server의 컨테이너만 10GB가 넘어간다.
 
-처음에는 Azure 학생 인증으로 $100 크레딧을 받아서 부담 없이 사용했는데, 2달 만에 전부 소진됐다. 이후로는 월 6~7만원을 내야 하는 상황.
+처음에는 Azure 학생 인증으로 $100 크레딧을 받아서 부담 없이 사용했는데, 2달 만에 전부 소진됐다.   
+이후로는 월 6~7만원을 내야 하는 상황.
 
 대안을 찾던 중 OCI Free Tier를 알게 됐다.
 
@@ -53,8 +55,7 @@ Out of capacity for shape VM.Standard.A1.Flex in availability domain AD-1. Creat
 
 ### Oracle의 재고 관리 방식
 
-Oracle은 Free Tier 전용 용량을 따로 두지 않는다. 
-
+Oracle은 Free Tier 전용 용량을 따로 두지 않는다.   
 유료 고객과 같은 풀에서 남는 자원을 Free Tier에 할당하는 구조다.
 
 즉:
@@ -79,8 +80,7 @@ Oracle은 Free Tier 전용 용량을 따로 두지 않는다.
 
 ### 접근 방식
 
-OCI에서 제공하는 Cloud Shell에서 스크립트를 작성해서 돌리기로 했다. 
-
+OCI에서 제공하는 Cloud Shell에서 스크립트를 작성해서 돌리기로 했다.   
 별도 인증 설정 없이 바로 OCI CLI를 쓸 수 있어서 편했다.
 
 ```bash
@@ -185,8 +185,7 @@ jobs:
 
 ### 삽질: Subnet OCID 오타
 
-처음 실행했는데 `NotAuthorizedOrNotFound` 에러가 났다.
-
+처음 실행했는데 `NotAuthorizedOrNotFound` 에러가 났다.  
 디버깅해보니 Subnet에 접근을 못하고 있었다. 
 
 원인은 허무하게도 **오타**였다.
@@ -197,16 +196,14 @@ ocid1.subnet.oc1.ap-huncheon-1.aaaa...
                    c가 빠짐
 ```
 
-`ap-chuncheon-1`인데 `ap-huncheon-1`로 되어있었다. 
-
+`ap-chuncheon-1`인데 `ap-huncheon-1`로 되어있었다.   
 처음 Cloud Shell에서 스크립트 짤 때 오타가 났던 것.
 
 **교훈: OCID는 반드시 콘솔에서 직접 복사하자.**
 
 ### 새로운 문제 발견
 
-오타 수정하고 나니 정상적으로 `Out of host capacity` 에러가 오기 시작했다. (이게 정상이다 🙃)
-
+오타 수정하고 나니 정상적으로 `Out of host capacity` 에러가 오기 시작했다. (이게 정상이다 🙃)  
 그런데 며칠 돌려보니 GitHub Actions cron의 한계가 보였다.
 
 - **cron 최소 간격이 5분**: 경쟁이 치열한 상황에서 불리
@@ -266,10 +263,8 @@ Thu Dec 25 05:04:42 UTC 2025: SUCCESS!
 
 <Image src="https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2cebdc82-a936-804e-8b53-f19167685081/2d4bdc82-a936-80c8-862c-dea30bb52938.png" />
 
-약 일주일간의 시도 끝에 드디어 인스턴스 확보에 성공했다.
-
-재밌는 건, Pay as you go로 업그레이드 신청해놓고 아직 적용되기 전에 잡혔다는 점이다. 
-
+약 일주일간의 시도 끝에 드디어 인스턴스 확보에 성공했다.  
+재밌는 건, Pay as you go로 업그레이드 신청해놓고 아직 적용되기 전에 잡혔다는 점이다.   
 업그레이드가 확보 확률을 높여준다는 얘기가 있어서 신청했는데, 결국 타이밍의 영역인 것 같다.
 
 ---

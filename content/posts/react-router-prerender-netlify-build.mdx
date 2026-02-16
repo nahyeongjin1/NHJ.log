@@ -2,7 +2,7 @@
 title: 'React Router v7 Pre-render + Netlify 호환 이슈 해결 과정'
 excerpt: 'React Router v7의 prerender 기능이 Netlify에서 동작하지 않는 원인을 파악하고 오픈소스에 기여한 경험'
 createdAt: '2025-12-29T03:01:00.000Z'
-updatedAt: '2026-01-20T05:48:00.000Z'
+updatedAt: '2026-02-16T09:30:00.000Z'
 tags: ['React Router v7', 'Netlify', 'Vite', 'Open Source', 'SSG']
 thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d8bdc82-a936-80d5-a9ea-cd644158618f/thumbnail.png'
 ---
@@ -182,8 +182,7 @@ config.build.rollupOptions.input = {
 
 ### 후속 진행
 
-PR #607은 GitHub Actions 워크플로우 권한 문제로 인해 외부 기여자가 직접 CI를 실행할 수 없어 닫혔다.
-
+PR #607은 GitHub Actions 워크플로우 권한 문제로 인해 외부 기여자가 직접 CI를 실행할 수 없어 닫혔다.  
 하지만 메인테이너(Philippe Serhal)가 PR #620을 새로 생성하면서:
 
 - 내 커밋을 체리픽하여 포함

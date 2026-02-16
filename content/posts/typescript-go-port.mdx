@@ -2,7 +2,7 @@
 title: 'TypeScript 컴파일러는 왜 Go로 다시 작성될까?'
 excerpt: 'tsc가 Go로 바뀌면 뭐가 달라지는가? Native code, GC, 그리고 Rust가 아닌 이유'
 createdAt: '2026-01-05T08:00:00.000Z'
-updatedAt: '2026-01-05T09:42:00.000Z'
+updatedAt: '2026-02-16T09:33:00.000Z'
 tags: ['Typescript', 'Go', 'Compiler', 'Open Source']
 thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2dfbdc82-a936-80cd-9e5f-efa4b8b9dd46/thumbnail.png'
 ---
@@ -48,18 +48,14 @@ TypeScript를... Go로 만든다고?
 
 ---
 
-TypeScript의 핵심 가치는 뛰어난 개발자 경험이다. 
-
-하지만 코드베이스가 커질수록 TypeScript 자체가 병목이 되는 상황이 발생했다.
-
+TypeScript의 핵심 가치는 뛰어난 개발자 경험이다.   
+하지만 코드베이스가 커질수록 TypeScript 자체가 병목이 되는 상황이 발생했다.  
 대규모 프로젝트에서 개발자들은 긴 로드/체크 시간을 경험했다.
 
-예를 들어 VS Code처럼 150만 줄짜리 프로젝트를 열면, 에디터가 전체 프로젝트의 타입 정보를 분석하는 데만 10초 가까이 걸린다. 
-
+예를 들어 VS Code처럼 150만 줄짜리 프로젝트를 열면, 에디터가 전체 프로젝트의 타입 정보를 분석하는 데만 10초 가까이 걸린다.   
 그 사이에 자동완성, 에러 표시, Go to Definition 같은 기능은 제대로 동작하지 않는다.
 
-이를 피하려면 `tsconfig.json`에서 `include` 범위를 좁히거나 project references로 프로젝트를 쪼개야 하는데, 그러면 에디터가 전체 코드베이스를 한 번에 보지 못해서 cross-reference 기능이 제한된다.
-
+이를 피하려면 `tsconfig.json`에서 `include` 범위를 좁히거나 project references로 프로젝트를 쪼개야 하는데, 그러면 에디터가 전체 코드베이스를 한 번에 보지 못해서 cross-reference 기능이 제한된다.  
 즉, "빠른 시작"과 "완전한 타입 분석" 사이에서 타협해야 했던 것이다.
 
 공식 블로그에서 공개한 벤치마크를 보면 문제의 심각성을 알 수 있다:
@@ -73,12 +69,13 @@ TypeScript의 핵심 가치는 뛰어난 개발자 경험이다.
 | tRPC | 18,000 | 5.5s | 0.6s | 9.1x |
 | rxjs | 2,100 | 1.1s | 0.1s | 11.0x |
 
-에디터 로드 시간도 마찬가지다. VS Code 프로젝트 기준으로 9.6초에서 1.2초로, 약 8배 빨라진다.
+에디터 로드 시간도 마찬가지다.   
+VS Code 프로젝트 기준으로 9.6초에서 1.2초로, 약 8배 빨라진다.
 
 Anders Hejlsberg(TypeScript 창시자)의 말을 빌리자면:
 
-> "JavaScript는 애초에 compute-intensive한 시스템 레벨 워크로드를 위한 언어가 아니었다. 
-> 반면 Go는 정확히 그 목적으로 설계되었다."
+> JavaScript는 애초에 compute-intensive한 시스템 레벨 워크로드를 위한 언어가 아니었다. 
+> 반면 Go는 정확히 그 목적으로 설계되었다.
 
 ## 무엇을 포팅하는가
 
@@ -108,8 +105,7 @@ Anders Hejlsberg(TypeScript 창시자)의 말을 빌리자면:
 
 ---
 
-공식 블로그 제목이 "A 10x Faster TypeScript"이고, URL slug가 typescript-native-port다. 
-
+공식 블로그 제목이 "A 10x Faster TypeScript"이고, URL slug가 typescript-native-port다.  
 여기서 말하는 Native가 무슨 뜻일까?
 
 ### Native Code란?
@@ -128,8 +124,7 @@ TS 소스코드 → tsc → JavaScript → Node.js(V8) → 실행
                                런타임이 필요
 ```
 
-즉, 기존 tsc는 Node.js 위에서 돌아가는 JavaScript 프로그램이었다. 
-
+즉, 기존 tsc는 Node.js 위에서 돌아가는 JavaScript 프로그램이었다.   
 새로운 tsc는 별도 런타임 없이 OS에서 바로 실행되는 바이너리다.
 
 ### AOT vs JIT
@@ -150,16 +145,14 @@ TS 소스코드 → tsc → JavaScript → Node.js(V8) → 실행
 
 1. **컴파일 타임 최적화**: 실행 전에 이미 최적화 완료
 
-기존 tsc를 실행하려면 Node.js가 JavaScript 파일을 로드하고, V8이 JIT 컴파일을 수행해야 했다. 
-
+기존 tsc를 실행하려면 Node.js가 JavaScript 파일을 로드하고, V8이 JIT 컴파일을 수행해야 했다.  
 Native 버전은 바이너리 하나만 실행하면 끝이다.
 
 ## 오해: TS → JS 변환 없어지나?
 
 ---
 
-여기서 헷갈릴 수 있는 부분이 있다.
-
+여기서 헷갈릴 수 있는 부분이 있다.  
 다른 분들은 아닐지 몰라도 일단 필자는 헷갈렸다.
 
 > tsc가 Go로 바뀌면, TypeScript도 JavaScript 안 거치고 바로 실행되는 거 아닌가?
@@ -174,8 +167,7 @@ tsc (TypeScript로 작성됨) → .ts 파일을 .js로 변환
 tsc (Go로 작성됨) → .ts 파일을 .js로 변환
 ```
 
-달라지는 건 tsc 자체의 실행 속도다. 
-
+달라지는 건 tsc 자체의 실행 속도다.  
 tsc의 출력물은 여전히 JavaScript이고, 그 JavaScript를 실행하려면 여전히 V8 같은 JS 엔진이 필요하다.
 
 | 구분 | 기존 | Go 포팅 후 |
@@ -192,12 +184,10 @@ tsc의 출력물은 여전히 JavaScript이고, 그 JavaScript를 실행하려�
 
 ---
 
-요즘 JavaScript 생태계의 도구들은 대부분 Rust로 작성된다. 
-
+요즘 JavaScript 생태계의 도구들은 대부분 Rust로 작성된다.   
 **esbuild**는 Go지만, **SWC**, **Deno**, **Biome** 등은 전부 Rust다.
 
-그런데 TypeScript 팀은 Go를 선택했다. 
-
+그런데 TypeScript 팀은 Go를 선택했다.   
 심지어 Anders Hejlsberg는 C#을 만든 사람인데, 자사 언어도 아닌 Go를 골랐다.
 
 왜일까?
@@ -210,24 +200,19 @@ Anders Hejlsberg가 직접 설명한 내용이다:
 > AST에는 child 포인터와 parent 포인터가 있고, symbol은 AST 노드를 참조하고, AST 노드는 다시 symbol을 참조한다. 
 > 타입들도 재귀적이라 서로 순환한다.
 
-Rust는 GC가 없다.
-
+Rust는 GC가 없다.  
 대신 ownership과 borrow checker로 메모리를 관리한다.
 
-TypeScript 컴파일러처럼 순환 참조가 많은 구조를 Rust로 옮기려면, 메모리 관리 방식을 근본적으로 재설계해야 한다.
-
+TypeScript 컴파일러처럼 순환 참조가 많은 구조를 Rust로 옮기려면, 메모리 관리 방식을 근본적으로 재설계해야 한다.  
 이건 포팅이 아니라 완전한 재작성이 된다.
 
-Go는 GC가 있으면서도 Native 바이너리를 만들 수 있다.
-
+Go는 GC가 있으면서도 Native 바이너리를 만들 수 있다.  
 TypeScript 컴파일러의 기존 구조를 거의 그대로 유지하면서 포팅할 수 있었던 이유다.
 
 ### 2. 포팅 vs 재작성
 
-TypeScript는 수백만 개의 프로젝트에서 사용된다.
-
-새 버전이 기존과 다르게 동작하면 생태계 전체가 흔들린다.
-
+TypeScript는 수백만 개의 프로젝트에서 사용된다.  
+새 버전이 기존과 다르게 동작하면 생태계 전체가 흔들린다.  
 재작성은 위험하다:
 
 - 시간이 훨씬 오래 걸린다
