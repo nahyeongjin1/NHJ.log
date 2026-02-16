@@ -244,7 +244,7 @@ function convertBlock(
 ): string | null {
   switch (block.type) {
     case 'paragraph':
-      return convertRichText(block.paragraph.rich_text);
+      return convertRichText(block.paragraph.rich_text).replace(/\n/g, '  \n');
 
     case 'heading_1': {
       const text = convertRichText(block.heading_1.rich_text);
