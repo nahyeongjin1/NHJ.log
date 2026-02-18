@@ -165,10 +165,10 @@ function generateSitemap(posts: Post[]): string {
   // 정적 페이지
   const staticPages = [
     { loc: '/', priority: '1.0', changefreq: 'daily' },
-    { loc: '/posts', priority: '0.9', changefreq: 'daily' },
-    { loc: '/projects', priority: '0.8', changefreq: 'weekly' },
-    { loc: '/bookmarks', priority: '0.7', changefreq: 'weekly' },
-    { loc: '/about', priority: '0.6', changefreq: 'monthly' },
+    { loc: '/posts/', priority: '0.9', changefreq: 'daily' },
+    { loc: '/projects/', priority: '0.8', changefreq: 'weekly' },
+    { loc: '/bookmarks/', priority: '0.7', changefreq: 'weekly' },
+    { loc: '/about/', priority: '0.6', changefreq: 'monthly' },
   ];
 
   const staticEntries = staticPages
@@ -186,7 +186,7 @@ function generateSitemap(posts: Post[]): string {
   const postEntries = posts
     .map(
       (post) => `  <url>
-    <loc>${SITE_URL}/posts/${post.slug}</loc>
+    <loc>${SITE_URL}/posts/${post.slug}/</loc>
     <lastmod>${post.updatedAt.split('T')[0]}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
