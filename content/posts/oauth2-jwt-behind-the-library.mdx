@@ -2,7 +2,7 @@
 title: '면접에서 털리며 이해한 OAuth2.0 + JWT 인증의 진짜 흐름'
 excerpt: '@fastify/oauth2와 fast-jwt 소스코드를 직접 뜯어보며 정리한 OAuth2.0 + JWT 보안의 실제 흐름'
 createdAt: '2026-01-16T09:58:00.000Z'
-updatedAt: '2026-02-16T09:35:00.000Z'
+updatedAt: '2026-02-24T05:30:00.000Z'
 tags: ['OAuth2.0', 'JWT', 'Fastify', 'Node.js', 'Security']
 thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2eabdc82-a936-8068-91b8-c4b02df23a4c/thumbnail.png'
 ---
@@ -91,14 +91,17 @@ Access Token이 브라우저에 직접 노출되지 않아 보안상 유리하�
     Resource->>Client: 11. 사용자 정보 반환
     Client->>Browser: 12. JWT 발급 및 쿠키 설정`} />
 
-핵심은 **6~8단계**다. 
+핵심은 **6~9단계**다. 
 
 Authorization Code는 브라우저를 거쳐 전달되지만, 실제 Access Token 교환은 Client와 Authorization Server 사이에서 직접 이루어진다.
 
-이 구조 덕분에 Access Token이 브라우저 히스토리나 로그에 남지 않는다.
+왜 Authorization Code를 거치는 걸까?
 
-하지만 이 흐름에도 공격 포인트가 존재한다. 
+Access Token을 콜백 URL의 쿼리 파라미터로 바로 내려주면, 브라우저 히스토리, 서버 접근 로그, Referrer 헤더 등 다양한 경로로 토큰이 노출될 수 있다.  
+Authorization Code는 그 자체로는 아무 권한이 없는 일회용 코드다.  
+이걸 서버 간 통신(8단계)에서 Access Token으로 교환하기 때문에, 토큰이 브라우저를 거치지 않고 Client 서버에만 존재할 수 있다.
 
+하지만 이 흐름에도 공격 포인트가 존재한다.  
 다음 섹션에서 각 단계별 보안 위협과 방어 메커니즘을 살펴보자.
 
 ## OAuth2.0 보안 위협과 방어
@@ -159,23 +162,18 @@ function defaultCheckStateFunction (request, callback) {
 
 ### Authorization Code 탈취와 PKCE
 
-**공격 시나리오 (특히 Public Client 환경)**
-
-모바일 앱이나 SPA처럼 Client Secret을 안전하게 보관할 수 없는 환경을 Public Client라고 한다. 
-
-이런 환경에서는 Authorization Code만으로 Access Token을 요청할 수 있어 탈취 위험이 크다.
-
-1. 피해자가 정상적으로 OAuth 인증을 진행한다
-
-1. Authorization Server가 콜백 URL로 리다이렉트한다 (`/callback?code=xxx`)
-
-1. 공격자가 이 code를 가로챈다
-
-1. 공격자가 탈취한 code로 Access Token을 요청한다
-
-1. 결과: 공격자가 피해자의 Access Token을 획득
-
+모바일 앱이나 SPA처럼 Client Secret을 안전하게 보관할 수 없는 환경을 Public Client라고 한다.  
 특히 모바일 앱에서는 Custom URI Scheme을 콜백 URL로 사용하는데, 악성 앱이 동일한 Scheme을 등록해 Authorization Code를 가로채는 방식이 PKCE가 제안된 주요 배경이다.
+
+서버사이드 앱(Confidential Client)이라면 Client Secret이 있으니 괜찮지 않을까?
+
+반드시 그렇지는 않다.  
+Authorization Code는 콜백 URL의 쿼리 파라미터로 전달되기 때문에, 네트워크 레벨 프록시나 리버스 프록시 로그에서 코드가 노출될 수 있다.  
+Client Secret이 있더라도, Authorization Code를 탈취한 공격자가 Secret까지 알고 있다면(내부 유출, 설정 파일 노출 등) Access Token 교환이 가능하다.
+
+그리고 표준도 이 방향으로 움직이고 있다.  
+OAuth 2.1 draft에서는 PKCE를 모든 클라이언트 유형에 의무화했다.  
+서버사이드라서 "동작은 하지만" PKCE를 쓰지 않는 건, 현재 모범 사례에서 벗어난 것이다.
 
 **방어: PKCE (Proof Key for Code Exchange)**
 
@@ -276,6 +274,51 @@ fastify.register(oauthPlugin, {
   // ...
 })
 ```
+
+## ID Token과 JWT: OAuth에서 받는 JWT
+
+---
+
+OAuth2.0은 인가(Authorization) 프로토콜이지, 인증(Authentication) 프로토콜이 아니다.  
+Access Token은 "이 사용자가 어떤 리소스에 접근할 수 있는가"를 나타내지만,  
+"이 사용자가 누구인가"를 증명하지는 않는다.
+
+이를 보완하기 위해 OAuth2.0 위에 얹은 것이 **OpenID Connect(OIDC)**다.  
+OIDC를 지원하는 Authorization Server(Google, GitHub 등)는 Access Token과 함께 **ID Token**을 발급한다.
+
+ID Token은 JWT 형태로 발급되며, 사용자 신원 정보(`sub`, `email`, `name` 등)를 담고 있다.
+
+### **ID Token 검증 흐름**
+
+ID Token은 비대칭키 기반으로 서명된다.
+
+1. IDP(Authorization Server)가 **비밀키(Private Key)**로 ID Token에 서명한다
+
+1. Client가 ID Token을 받으면, IDP가 공개한 **공개키(Public Key)**로 서명을 검증한다
+
+1. 공개키는 IDP의 JWKS endpoint(`/.well-known/jwks.json`)에서 누구나 가져올 수 있다
+
+```text
+// 공개키 endpoint 예시
+// <https://accounts.google.com/.well-known/openid-configuration>
+// → jwks_uri: "<https://www.googleapis.com/oauth2/v3/certs>"
+```
+
+공개키로만 서명 검증이 가능하고, 비밀키 없이는 위조가 불가능하다.  
+이 구조 덕분에 Client는 IDP를 신뢰하는 방식으로 사용자 신원을 안전하게 확인할 수 있다.
+
+### **Access Token vs ID Token**
+
+|  | Access Token | ID Token |
+| --- | --- | --- |
+| 목적 | 리소스 접근 권한 | 사용자 신원 확인 |
+| 대상 | Resource Server | Client |
+| 형식 | 불투명(Opaque) 또는 JWT | JWT (OIDC 표준) |
+| 서명 방식 | Provider마다 다름 | 비대칭키(RS256 등) |
+
+포스트 뒷부분에서 다루는 `@fastify/jwt`로 발급하는 토큰은 ID Token과 별개다.  
+OAuth 인증을 완료한 후, **AIew 서비스 자체**가 세션 관리용으로 발급하는 토큰이다.  
+이 둘을 혼동하지 않는 게 중요하다.
 
 ## JWT 보안
 
@@ -431,7 +474,17 @@ fastify.register(jwt, {
 })
 ```
 
-`fast-jwt`가 키 타입에서 알고리즘을 자동 감지하긴 하지만, 명시적으로 지정하는 게 모범 사례다.
+`fast-jwt`는 키 타입에서 알고리즘을 자동 감지한다고 했다.  
+그런데 `secret`이 **string이나 Buffer**로 주어지면 어떻게 될까?
+
+`fast-jwt`는 이를 HMAC 계열로 판단하고, `allowedAlgorithms`를 `['HS256', 'HS384', 'HS512']` 전체로 설정한다.
+
+즉, 내 코드는 `HS256`으로 서명했지만 검증은 `HS384`, `HS512`로 서명된 토큰도 통과시킨다.  
+공격자가 같은 시크릿으로 더 약한 알고리즘을 강제하거나, 향후 알고리즘 관련 취약점이 발견됐을 때  
+예상치 못한 경로가 열릴 수 있다.
+
+비대칭키(RS256, ES256 등)는 키 타입 자체가 알고리즘을 결정하므로 이 문제가 없다.  
+하지만 대칭키(HMAC)를 쓰는 경우, 어떤 알고리즘만 허용할지 명시적으로 고정하는 게 맞다.
 
 **수정:**
 
@@ -439,7 +492,7 @@ fastify.register(jwt, {
 fastify.register(jwt, {
   secret: process.env.JWT_SECRET as string,
   sign: { algorithm: 'HS256' },
-  verify: { algorithms: ['HS256'] },  // 추가
+  verify: { algorithms: ['HS256'] },  // 추가: HS256만 허용
   cookie: {
     cookieName: 'accessToken',
     signed: false,
@@ -531,6 +584,7 @@ reply
 | Timing Attack | 상수 시간 비교 | ✅ 자동 | - |
 | XSS로 토큰 탈취 | HttpOnly Cookie | - | ✅ 직접 구현 |
 | CSRF로 요청 위조 | sameSite Cookie | - | ✅ 직접 구현 |
+| ID Token 위조 | 비대칭키 서명 (OIDC) | ✅ IDP가 처리 | - |
 
 라이브러리가 많은 것을 자동으로 처리해주지만, **"할 수 있는 것"과 "자동으로 해주는 것"은 다르다**. 
 
@@ -550,5 +604,6 @@ PKCE처럼 옵션을 명시해야만 활성화되는 경우도 있고, 쿠키 �
 | @fastify/jwt GitHub | [https://github.com/fastify/fastify-jwt](https://github.com/fastify/fastify-jwt) |
 | fast-jwt GitHub | [https://github.com/nearform/fast-jwt](https://github.com/nearform/fast-jwt) |
 | RFC 6749 - OAuth 2.0 | [https://datatracker.ietf.org/doc/html/rfc6749](https://datatracker.ietf.org/doc/html/rfc6749) |
+| draft-ietf-oauth-v2-1-14 | [https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/](https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/) |
 | RFC 7636 - PKCE | [https://datatracker.ietf.org/doc/html/rfc7636](https://datatracker.ietf.org/doc/html/rfc7636) |
 | RFC 7519 - JWT | [https://datatracker.ietf.org/doc/html/rfc7519](https://datatracker.ietf.org/doc/html/rfc7519) |
