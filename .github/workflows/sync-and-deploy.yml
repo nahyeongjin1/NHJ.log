@@ -1,0 +1,93 @@
+name: Sync Notion & Deploy Preview
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: sync-and-deploy
+  cancel-in-progress: true
+
+jobs:
+  sync-and-deploy:
+    name: Sync, Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout develop
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync Notion content
+        run: npm run sync-notion
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          POSTS_DB_ID: ${{ secrets.POSTS_DB_ID }}
+          PROJECTS_DB_ID: ${{ secrets.PROJECTS_DB_ID }}
+          BOOKMARKS_DB_ID: ${{ secrets.BOOKMARKS_DB_ID }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+
+      - name: Commit and push
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add content/ public/sitemap.xml
+          if ! git diff --cached --quiet; then
+            TIMESTAMP=$(TZ=Asia/Seoul date +"%Y-%m-%d %H:%M")
+            git commit -m "chore: sync content from Notion ($TIMESTAMP)"
+            git push origin develop
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ 변경사항 없음"
+          fi
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint check
+        run: npm run lint
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
+      - name: Deploy preview to Netlify
+        run: netlify deploy --alias develop-preview --message "Sync from Notion (GitHub Actions)"
+        env:
+          NETLIFY_DATABASE_URL: ${{ secrets.NETLIFY_DATABASE_URL }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 10
+
+      - name: Create or update PR
+        if: steps.commit.outputs.has_changes == 'true'
+        run: |
+          EXISTING_PR=$(gh pr list --base main --head develop --json number --jq '.[0].number')
+          if [ -z "$EXISTING_PR" ]; then
+            gh pr create --base main --head develop \
+              --title "chore: deploy content to production" \
+              --body "$(cat <<'EOF'
+          ## Summary
+          Notion 콘텐츠 동기화 후 자동 생성된 PR입니다.
+          [preview 배포](https://develop-preview--hyeongjin.netlify.app/)를 확인한 후 Rebase and merge로 통합해주세요.
+          EOF
+          )"
+          else
+            echo "✅ PR #$EXISTING_PR already exists"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
