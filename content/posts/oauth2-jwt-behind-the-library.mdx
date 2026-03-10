@@ -12,12 +12,12 @@ thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2ea
 ---
 
 <Callout icon="💡">
-1. **OAuth2.0**: `state` 파라미터는 CSRF를, `PKCE`는 Authorization Code 탈취를 막는다. 
+1. <strong>OAuth2.0</strong>: `state` 파라미터는 CSRF를, `PKCE`는 Authorization Code 탈취를 막는다. 
 라이브러리가 자동 처리해주지만, 설정에 따라 PKCE는 명시적으로 켜야 할 수 있다.
 
-1. **JWT**: `alg: "none"` 공격과 알고리즘 혼동 공격은 "토큰이 주장하는 알고리즘을 믿지 않고, 서버가 허용한 알고리즘만 사용"하는 방식으로 방어한다.
+1. <strong>JWT</strong>: `alg: "none"` 공격과 알고리즘 혼동 공격은 "토큰이 주장하는 알고리즘을 믿지 않고, 서버가 허용한 알고리즘만 사용"하는 방식으로 방어한다.
 
-1. **교훈**: 라이브러리가 "할 수 있는 것"과 "자동으로 해주는 것"은 다르다. 
+1. <strong>교훈</strong>: 라이브러리가 "할 수 있는 것"과 "자동으로 해주는 것"은 다르다. 
 내 코드에서 PKCE 미적용, algorithms 미작성을 발견했다.
 </Callout>
 
@@ -30,17 +30,17 @@ AIew 프로젝트에서 멀쩡히 동작하는 OAuth2.0 + JWT 인증을 구현�
 
 문제는 그 다음이었다.
 
-> *OAuth2.0 인증 흐름에서 Authorization Code가 탈취되면 어떻게 되나요? 방어 방법이 있나요?*
+> *OAuth2.0 인증 흐름에서 Authorization Code가 탈취되면 어떻게 되나요? 방어 방법이 있나요?*  
 
-> *alg: none 공격이 뭔가요?*
+> *alg: none 공격이 뭔가요?*  
 
-> *state 파라미터는 정확히 어떤 공격을 막나요?*
+> *state 파라미터는 정확히 어떤 공격을 막나요?*  
 
 하나도 제대로 답하지 못했다.
 
 돌아보니 원인은 명확했다. 
 
-라이브러리가 다 해주니까 **동작은 했는데**, 정작 **왜 그렇게 동작하는지**는 몰랐던 거다.
+라이브러리가 다 해주니까 <strong>동작은 했는데</strong>, 정작 <strong>왜 그렇게 동작하는지</strong>는 몰랐던 거다.
 
 나는 졸업 프로젝트 AIew에서 `@fastify/oauth2`로 GitHub/Google OAuth2.0 로그인을, `@fastify/jwt`로 토큰 발급과 검증을 구현했다. 
 
@@ -50,7 +50,7 @@ AIew 프로젝트에서 멀쩡히 동작하는 OAuth2.0 + JWT 인증을 구현�
 
 그리고 내 코드에서 실제로 놓쳤던 부분도 함께 공유한다.
 
-## **OAuth2.0 기본 흐름**
+## <strong>OAuth2.0 기본 흐름</strong>
 
 ---
 
@@ -93,7 +93,7 @@ Access Token이 브라우저에 직접 노출되지 않아 보안상 유리하�
     Resource->>Client: 11. 사용자 정보 반환
     Client->>Browser: 12. JWT 발급 및 쿠키 설정`} />
 
-핵심은 **6~9단계**다. 
+핵심은 <strong>6~9단계</strong>다. 
 
 Authorization Code는 브라우저를 거쳐 전달되지만, 실제 Access Token 교환은 Client와 Authorization Server 사이에서 직접 이루어진다.
 
@@ -114,9 +114,9 @@ Authorization Code Flow는 안전한 편이지만, 여전히 공격 포인트가
 
 각 위협과 방어 메커니즘을 공개되어있는 `@fastify/oauth2` 소스코드와 함께 살펴보자.
 
-### **CSRF 공격과 state 파라미터**
+### <strong>CSRF 공격과 state 파라미터</strong>
 
-**공격 시나리오**
+<strong>공격 시나리오</strong>
 
 1. 공격자가 자신의 GitHub 계정으로 OAuth 인증을 시작한다
 
@@ -128,7 +128,7 @@ Authorization Code Flow는 안전한 편이지만, 여전히 공격 포인트가
 
 1. 결과: 피해자의 세션이 공격자의 계정과 연결됨
 
-**방어: state 파라미터**
+<strong>방어: state 파라미터</strong>
 
 `@fastify/oauth2`는 이를 자동으로 처리한다.
 
@@ -177,7 +177,7 @@ Client Secret이 있더라도, Authorization Code를 탈취한 공격자가 Secr
 OAuth 2.1 draft에서는 PKCE를 모든 클라이언트 유형에 의무화했다.  
 서버사이드라서 "동작은 하지만" PKCE를 쓰지 않는 건, 현재 모범 사례에서 벗어난 것이다.
 
-**방어: PKCE (Proof Key for Code Exchange)**
+<strong>방어: PKCE (Proof Key for Code Exchange)</strong>
 
 `@fastify/oauth2`의 PKCE 구현을 보자.
 
@@ -224,7 +224,7 @@ const pkceParams = configured.pkce
 
 공격자는 verifier 없이 Token을 요청할 수 없다.
 
-**설정 방식에 따른 PKCE 활성화**
+<strong>설정 방식에 따른 PKCE 활성화</strong>
 
 `@fastify/oauth2`는 두 가지 설정 방식을 제공한다.
 
@@ -265,7 +265,7 @@ fastify.register(oauthPlugin, {
 
 GitHub이 PKCE를 강제하지 않아서 동작은 하지만, 보안 모범 사례는 아니다.
 
-**수정:**
+<strong>수정:</strong>
 
 ```typescript
 fastify.register(oauthPlugin, {
@@ -285,18 +285,18 @@ OAuth2.0은 인가(Authorization) 프로토콜이지, 인증(Authentication) 프
 Access Token은 "이 사용자가 어떤 리소스에 접근할 수 있는가"를 나타내지만,  
 "이 사용자가 누구인가"를 증명하지는 않는다.
 
-이를 보완하기 위해 OAuth2.0 위에 얹은 것이 **OpenID Connect(OIDC)**다.  
-OIDC를 지원하는 Authorization Server(Google, GitHub 등)는 Access Token과 함께 **ID Token**을 발급한다.
+이를 보완하기 위해 OAuth2.0 위에 얹은 것이 <strong>OpenID Connect(OIDC)</strong>다.  
+OIDC를 지원하는 Authorization Server(Google, GitHub 등)는 Access Token과 함께 <strong>ID Token</strong>을 발급한다.
 
 ID Token은 JWT 형태로 발급되며, 사용자 신원 정보(`sub`, `email`, `name` 등)를 담고 있다.
 
-### **ID Token 검증 흐름**
+### <strong>ID Token 검증 흐름</strong>
 
 ID Token은 비대칭키 기반으로 서명된다.
 
-1. IDP(Authorization Server)가 **비밀키(Private Key)**로 ID Token에 서명한다
+1. IDP(Authorization Server)가 <strong>비밀키(Private Key)</strong>로 ID Token에 서명한다
 
-1. Client가 ID Token을 받으면, IDP가 공개한 **공개키(Public Key)**로 서명을 검증한다
+1. Client가 ID Token을 받으면, IDP가 공개한 <strong>공개키(Public Key)</strong>로 서명을 검증한다
 
 1. 공개키는 IDP의 JWKS endpoint(`/.well-known/jwks.json`)에서 누구나 가져올 수 있다
 
@@ -309,7 +309,7 @@ ID Token은 비대칭키 기반으로 서명된다.
 공개키로만 서명 검증이 가능하고, 비밀키 없이는 위조가 불가능하다.  
 이 구조 덕분에 Client는 IDP를 신뢰하는 방식으로 사용자 신원을 안전하게 확인할 수 있다.
 
-### **Access Token vs ID Token**
+### <strong>Access Token vs ID Token</strong>
 
 |  | Access Token | ID Token |
 | --- | --- | --- |
@@ -319,7 +319,7 @@ ID Token은 비대칭키 기반으로 서명된다.
 | 서명 방식 | Provider마다 다름 | 비대칭키(RS256 등) |
 
 포스트 뒷부분에서 다루는 `@fastify/jwt`로 발급하는 토큰은 ID Token과 별개다.  
-OAuth 인증을 완료한 후, **AIew 서비스 자체**가 세션 관리용으로 발급하는 토큰이다.  
+OAuth 인증을 완료한 후, <strong>AIew 서비스 자체</strong>가 세션 관리용으로 발급하는 토큰이다.  
 이 둘을 혼동하지 않는 게 중요하다.
 
 ## JWT 보안
@@ -336,7 +336,7 @@ JWT도 마찬가지로 라이브러리가 많은 것을 처리해주지만, 어�
 
 ### alg: "none" 공격
 
-**공격 시나리오**
+<strong>공격 시나리오</strong>
 
 JWT 헤더에는 서명 알고리즘을 지정하는 `alg` 필드가 있다. 
 
@@ -350,7 +350,7 @@ JWT 헤더에는 서명 알고리즘을 지정하는 `alg` 필드가 있다.
 { "alg": "none", "typ": "JWT" }
 ```
 
-**방어: 알고리즘 화이트리스트**
+<strong>방어: 알고리즘 화이트리스트</strong>
 
 `fast-jwt`의 `verifier.js`를 보자.
 
@@ -368,11 +368,11 @@ function validateAlgorithmAndSignature(input, header, signature, key, allowedAlg
 }
 ```
 
-핵심은 **토큰이 주장하는 알고리즘을 그대로 믿지 않는다**는 것이다. 서버가 설정한 `allowedAlgorithms`에 없으면 거부한다. `"none"`은 당연히 허용 목록에 없으므로 공격이 차단된다.
+핵심은 <strong>토큰이 주장하는 알고리즘을 그대로 믿지 않는다</strong>는 것이다. 서버가 설정한 `allowedAlgorithms`에 없으면 거부한다. `"none"`은 당연히 허용 목록에 없으므로 공격이 차단된다.
 
 ### 알고리즘 혼동 공격
 
-**공격 시나리오**
+<strong>공격 시나리오</strong>
 
 RS256(비대칭키)으로 서명된 토큰을 검증하는 서버가 있다고 하자. 
 
@@ -386,7 +386,7 @@ RS256(비대칭키)으로 서명된 토큰을 검증하는 서버가 있다고 �
 
 만약 서버가 토큰의 `alg` 값을 그대로 따른다면, 공개키로 HMAC 검증을 시도하고 성공해버린다.
 
-**방어: 키 타입별 알고리즘 분리**
+<strong>방어: 키 타입별 알고리즘 분리</strong>
 
 `fast-jwt`의 `crypto.js`를 보자.
 
@@ -416,13 +416,13 @@ RSA 공개키를 설정하면 `rsaAlgorithms`만 허용된다.
 
 ### Timing Attack과 timingSafeEqual
 
-**공격 시나리오**
+<strong>공격 시나리오</strong>
 
 서명 검증 시 문자열 비교를 일반적인 방식(`===`)으로 하면, 불일치가 발생한 위치에 따라 비교 시간이 달라진다. 
 
 공격자는 이 시간 차이를 측정해 올바른 서명을 한 글자씩 추측할 수 있다.
 
-**방어: 상수 시간 비교**
+<strong>방어: 상수 시간 비교</strong>
 
 `fast-jwt`의 `crypto.js`에서 HMAC 서명 검증 부분을 보자.
 
@@ -477,7 +477,7 @@ fastify.register(jwt, {
 ```
 
 `fast-jwt`는 키 타입에서 알고리즘을 자동 감지한다고 했다.  
-그런데 `secret`이 **string이나 Buffer**로 주어지면 어떻게 될까?
+그런데 `secret`이 <strong>string이나 Buffer</strong>로 주어지면 어떻게 될까?
 
 `fast-jwt`는 이를 HMAC 계열로 판단하고, `allowedAlgorithms`를 `['HS256', 'HS384', 'HS512']` 전체로 설정한다.
 
@@ -488,7 +488,7 @@ fastify.register(jwt, {
 비대칭키(RS256, ES256 등)는 키 타입 자체가 알고리즘을 결정하므로 이 문제가 없다.  
 하지만 대칭키(HMAC)를 쓰는 경우, 어떤 알고리즘만 허용할지 명시적으로 고정하는 게 맞다.
 
-**수정:**
+<strong>수정:</strong>
 
 ```typescript
 fastify.register(jwt, {
@@ -517,13 +517,13 @@ JWT를 발급했으면 클라이언트에 전달하고 이후 요청에서 사�
 | localStorage | ⚠️ 취약 | ✅ 안전 | ❌ 불가 |
 | HttpOnly Cookie | ✅ 안전 | ⚠️ 취약 | ✅ 가능 |
 
-**localStorage**는 JavaScript로 자유롭게 접근할 수 있다. 
+<strong>localStorage</strong>는 JavaScript로 자유롭게 접근할 수 있다. 
 
 XSS 공격이 성공하면 토큰이 바로 탈취된다. 
 
 또한 브라우저에서만 접근 가능하므로 SSR 환경에서는 사용할 수 없다.
 
-**HttpOnly Cookie**는 JavaScript에서 접근할 수 없다. 
+<strong>HttpOnly Cookie</strong>는 JavaScript에서 접근할 수 없다. 
 
 XSS로 토큰 자체를 훔칠 수는 없지만, 쿠키가 자동으로 전송되므로 CSRF 공격에 노출될 수 있다.
 
@@ -588,11 +588,11 @@ reply
 | CSRF로 요청 위조 | sameSite Cookie | - | ✅ 직접 구현 |
 | ID Token 위조 | 비대칭키 서명 (OIDC) | ✅ IDP가 처리 | - |
 
-라이브러리가 많은 것을 자동으로 처리해주지만, **"할 수 있는 것"과 "자동으로 해주는 것"은 다르다**. 
+라이브러리가 많은 것을 자동으로 처리해주지만, <strong>"할 수 있는 것"과 "자동으로 해주는 것"은 다르다</strong>. 
 
 PKCE처럼 옵션을 명시해야만 활성화되는 경우도 있고, 쿠키 보안 설정처럼 개발자가 직접 구현해야 하는 부분도 있다.
 
-결국 중요한 건 **왜 이런 코드가 필요한지 이해하는 것**이다. 
+결국 중요한 건 <strong>왜 이런 코드가 필요한지 이해하는 것</strong>이다. 
 
 라이브러리를 신뢰하되, 그 안에서 어떤 보안 메커니즘이 작동하는지 알아야 설정을 빠뜨리지 않고, 면접에서도 제대로 답할 수 있다.
 

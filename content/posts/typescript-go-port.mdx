@@ -27,7 +27,7 @@ thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2df
 
 필자는 Node.js 백엔드 개발자를 희망하고 있기도 하고, React 경험도 있어서 TypeScript를 좋아한다.
 
-그래서 Effective TypeScript를 읽어보던 중 **tsc**와 **tsserver**의 구현이 궁금해졌고 다음 레포지토리를 뜯어보기로 했다.
+그래서 Effective TypeScript를 읽어보던 중 <strong>tsc</strong>와 <strong>tsserver</strong>의 구현이 궁금해졌고 다음 레포지토리를 뜯어보기로 했다.
 
 <LinkCard url="https://github.com/microsoft/TypeScript" title="GitHub - microsoft/TypeScript: TypeScript is a superset of JavaScript that compiles to clean JavaScript output." description="TypeScript is a superset of JavaScript that compiles to clean JavaScript output. - microsoft/TypeScript" image="https://opengraph.githubassets.com/987c2c81b66cc92262680c71c743f1d8a4a02e6bf9061444b7abbbd47886aa87/microsoft/TypeScript" favicon="https://github.githubassets.com/favicons/favicon.svg" />
 
@@ -74,8 +74,8 @@ VS Code 프로젝트 기준으로 9.6초에서 1.2초로, 약 8배 빨라진다.
 
 Anders Hejlsberg(TypeScript 창시자)의 말을 빌리자면:
 
-> JavaScript는 애초에 compute-intensive한 시스템 레벨 워크로드를 위한 언어가 아니었다. 
-> 반면 Go는 정확히 그 목적으로 설계되었다.
+> JavaScript는 애초에 compute-intensive한 시스템 레벨 워크로드를 위한 언어가 아니었다.   
+> 반면 Go는 정확히 그 목적으로 설계되었다.  
 
 ## 무엇을 포팅하는가
 
@@ -83,9 +83,9 @@ Anders Hejlsberg(TypeScript 창시자)의 말을 빌리자면:
 
 포팅 대상은 크게 두 가지다:
 
-- **tsc**: 커맨드라인 컴파일러. `.ts` 파일을 `.js`로 변환하고 타입 체크를 수행한다.
+- <strong>tsc</strong>: 커맨드라인 컴파일러. `.ts` 파일을 `.js`로 변환하고 타입 체크를 수행한다.
 
-- **tsserver**: 에디터용 언어 서버. 자동완성, 에러 표시, Go to Definition 등을 담당한다.
+- <strong>tsserver</strong>: 에디터용 언어 서버. 자동완성, 에러 표시, Go to Definition 등을 담당한다.
 
 그리고 이 둘의 근간이 되는 컴파일러 파이프라인 전체가 포팅된다:
 
@@ -137,13 +137,13 @@ TS 소스코드 → tsc → JavaScript → Node.js(V8) → 실행
 
 ### 왜 Native가 빠른가?
 
-1. **콜드 스타트 없음**: JIT 워밍업 시간이 필요 없다
+1. <strong>콜드 스타트 없음</strong>: JIT 워밍업 시간이 필요 없다
 
-1. **런타임 오버헤드 없음**: V8 같은 중간 레이어가 없다
+1. <strong>런타임 오버헤드 없음</strong>: V8 같은 중간 레이어가 없다
 
-1. **메모리 효율**: 더 예측 가능하고 효율적인 메모리 관리
+1. <strong>메모리 효율</strong>: 더 예측 가능하고 효율적인 메모리 관리
 
-1. **컴파일 타임 최적화**: 실행 전에 이미 최적화 완료
+1. <strong>컴파일 타임 최적화</strong>: 실행 전에 이미 최적화 완료
 
 기존 tsc를 실행하려면 Node.js가 JavaScript 파일을 로드하고, V8이 JIT 컴파일을 수행해야 했다.  
 Native 버전은 바이너리 하나만 실행하면 끝이다.
@@ -155,9 +155,9 @@ Native 버전은 바이너리 하나만 실행하면 끝이다.
 여기서 헷갈릴 수 있는 부분이 있다.  
 다른 분들은 아닐지 몰라도 일단 필자는 헷갈렸다.
 
-> tsc가 Go로 바뀌면, TypeScript도 JavaScript 안 거치고 바로 실행되는 거 아닌가?
+> tsc가 Go로 바뀌면, TypeScript도 JavaScript 안 거치고 바로 실행되는 거 아닌가?  
 
-아니다. **컴파일러의 구현 언어**와 **컴파일러가 하는 일**은 별개다.
+아니다. <strong>컴파일러의 구현 언어</strong>와 <strong>컴파일러가 하는 일</strong>은 별개다.
 
 ```text
 [기존]
@@ -178,14 +178,14 @@ tsc의 출력물은 여전히 JavaScript이고, 그 JavaScript를 실행하려�
 | JS 실행에 V8 필요 | O | O |
 | 최종 앱 성능 | 동일 | 동일 |
 
-결국 **개발자 경험(DX)**이 좋아지는 거지, 최종 사용자가 쓰는 앱의 런타임 성능과는 무관하다.
+결국 <strong>개발자 경험(DX)</strong>이 좋아지는 거지, 최종 사용자가 쓰는 앱의 런타임 성능과는 무관하다.
 
 ## 왜 Rust가 아니라 Go인가
 
 ---
 
 요즘 JavaScript 생태계의 도구들은 대부분 Rust로 작성된다.   
-**esbuild**는 Go지만, **SWC**, **Deno**, **Biome** 등은 전부 Rust다.
+<strong>esbuild</strong>는 Go지만, <strong>SWC</strong>, <strong>Deno</strong>, <strong>Biome</strong> 등은 전부 Rust다.
 
 그런데 TypeScript 팀은 Go를 선택했다.   
 심지어 Anders Hejlsberg는 C#을 만든 사람인데, 자사 언어도 아닌 Go를 골랐다.
@@ -196,9 +196,9 @@ tsc의 출력물은 여전히 JavaScript이고, 그 JavaScript를 실행하려�
 
 Anders Hejlsberg가 직접 설명한 내용이다:
 
-> 우리의 모든 데이터 구조는 순환 참조로 가득하다. 
-> AST에는 child 포인터와 parent 포인터가 있고, symbol은 AST 노드를 참조하고, AST 노드는 다시 symbol을 참조한다. 
-> 타입들도 재귀적이라 서로 순환한다.
+> 우리의 모든 데이터 구조는 순환 참조로 가득하다.   
+> AST에는 child 포인터와 parent 포인터가 있고, symbol은 AST 노드를 참조하고, AST 노드는 다시 symbol을 참조한다.   
+> 타입들도 재귀적이라 서로 순환한다.  
 
 Rust는 GC가 없다.  
 대신 ownership과 borrow checker로 메모리를 관리한다.

@@ -102,7 +102,7 @@ Netlify는 디렉토리 경로로 요청이 오면 trailing slash를 붙여 리�
 
 prerender된 HTML 없이 어떻게 렌더링되는 걸까?
 
-**핵심**은 클라이언트 내비게이션과 서버 요청의 차이다.
+<strong>핵심</strong>은 클라이언트 내비게이션과 서버 요청의 차이다.
 
 ### 클라이언트 내비게이션 (PostCard 클릭)
 
@@ -137,7 +137,7 @@ prerender된 HTML 없이 어떻게 렌더링되는 걸까?
 
 새로고침은 서버에 HTML을 요청하므로 Netlify의 리디렉션이 발생한다.
 
-### **.data 파일이란?**
+### <strong>.data 파일이란?</strong>
 
 ```text
 build/client/posts/
@@ -176,7 +176,7 @@ function CommentsClient({ postSlug }: CommentsProps) {
 }
 ```
 
-### **API (comments.ts)**
+### <strong>API (comments.ts)</strong>
 
 ```typescript
 function normalizeSlug(slug: string): string {
