@@ -151,11 +151,11 @@ function convertRichTextItem(item: RichTextItemResponse): string {
     text = `\`${text}\``;
   }
 
-  // Bold + Italic 조합
+  // Bold + Italic 조합 (HTML 태그 사용으로 구두점 인접 시에도 정상 렌더링)
   if (annotations.bold && annotations.italic) {
-    text = `***${text}***`;
+    text = `<strong><em>${text}</em></strong>`;
   } else if (annotations.bold) {
-    text = `**${text}**`;
+    text = `<strong>${text}</strong>`;
   } else if (annotations.italic) {
     text = `*${text}*`;
   }
@@ -313,7 +313,7 @@ function convertBlock(
         children.length > 0
           ? convertBlocksWithMaps(children, metadataMap, imageMap)
           : '';
-      const quoteLines = text.split('\n').map((line) => `> ${line}`);
+      const quoteLines = text.split('\n').map((line) => `> ${line}  `);
       if (childContent) {
         const childQuoteLines = childContent
           .split('\n')
