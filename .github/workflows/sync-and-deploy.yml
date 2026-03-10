@@ -7,6 +7,10 @@ concurrency:
   group: sync-and-deploy
   cancel-in-progress: true
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   sync-and-deploy:
     name: Sync, Build and Deploy
