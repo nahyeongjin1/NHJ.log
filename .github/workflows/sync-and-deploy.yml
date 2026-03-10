@@ -44,6 +44,12 @@ jobs:
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
           R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
 
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint check
+        run: npm run lint
+
       - name: Commit and push
         id: commit
         run: |
@@ -59,12 +65,6 @@ jobs:
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "ℹ️ 변경사항 없음"
           fi
-
-      - name: Type check
-        run: npm run typecheck
-
-      - name: Lint check
-        run: npm run lint
 
       - name: Install Netlify CLI
         run: npm install -g netlify-cli
