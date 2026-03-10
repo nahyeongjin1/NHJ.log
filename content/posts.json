@@ -1,5 +1,22 @@
 [
   {
+    "id": "31dbdc82-a936-8035-8705-fca7d3db070b",
+    "title": "무신사 AI Native Engineer 3차 면접 회고: 단일 Record 경합과 Hot Spot 문제",
+    "slug": "musinsa-rookie-3",
+    "excerpt": "단일 record에 수만 건의 쓰기가 몰리는 고충돌 도메인에서, 처리 속도를 올리는 것과 경합 자체를 줄이는 것은 다른 차원의 문제다. record 분할을 통한 hot spot 완화 전략과 그 트레이드오프를 면접 경험을 바탕으로 정리했다.",
+    "tags": [
+      "Concurrency",
+      "Hot Spot",
+      "Pessimistic Lock",
+      "Record Splitting"
+    ],
+    "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/31dbdc82-a936-8035-8705-fca7d3db070b/thumbnail.png",
+    "published": true,
+    "createdAt": "2026-03-08T07:29:00.000Z",
+    "updatedAt": "2026-03-10T04:46:00.000Z",
+    "readingTime": 9
+  },
+  {
     "id": "307bdc82-a936-8004-a1db-e0be273d1ecf",
     "title": "무신사 AI Native Engineer 2차 코딩테스트 회고",
     "slug": "musinsa-rookie-2",
@@ -48,7 +65,7 @@
     "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2eabdc82-a936-8068-91b8-c4b02df23a4c/thumbnail.png",
     "published": true,
     "createdAt": "2026-01-16T09:58:00.000Z",
-    "updatedAt": "2026-02-24T05:30:00.000Z",
+    "updatedAt": "2026-02-25T07:12:00.000Z",
     "relatedProject": "2cebdc82-a936-8005-beca-e1a9eaddbce6",
     "readingTime": 13
   },
