@@ -16,7 +16,7 @@ thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d8
 
 1. 원인: Netlify 플러그인이 rollupOptions.input을 덮어써서 server-build가 manifest에서 제외됨
 
-1. 해결: enforce: 'post' 플러그인으로 우회 후, Netlify 플러그인에 PR 기여 → **v2.1.3에 반영됨**
+1. 해결: enforce: 'post' 플러그인으로 우회 후, Netlify 플러그인에 PR 기여 → <strong>v2.1.3에 반영됨</strong>
 </Callout>
 
 ## 배경: Pre-rendering(SSG)란?
@@ -33,14 +33,14 @@ thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2d8
 
 ---
 
-React Router의 prerender는 **단순한 케이스**를 위해 설계됨:
+React Router의 prerender는 <strong>단순한 케이스</strong>를 위해 설계됨:
 
 ```text
 [일반적인 구조]
 vite build → server-build 생성 → prerender가 server-build 로드 → HTML 생성
 ```
 
-하지만 **커스텀 서버** (Vercel Functions, Netlify Functions 등)를 쓰면:
+하지만 <strong>커스텀 서버</strong> (Vercel Functions, Netlify Functions 등)를 쓰면:
 
 ```text
 [커스텀 서버 구조]
@@ -62,9 +62,9 @@ prerender는 server-build만 로드 → custom server entry 무시됨!
 
 플랫폼 플러그인들이 서버 빌드 출력을 수정하여 React Router의 prerender 프로세스가 manifest에서 서버 빌드 파일을 찾지 못함.
 
-**Netlify 플러그인의 경우:**
+<strong>Netlify 플러그인의 경우:</strong>
 
-`@netlify/vite-plugin-react-router`가 `config` 훅에서 `rollupOptions.input`을 **덮어쓰기**함:
+`@netlify/vite-plugin-react-router`가 `config` 훅에서 `rollupOptions.input`을 <strong>덮어쓰기</strong>함:
 
 ```typescript
 // node_modules/@netlify/vite-plugin-react-router/dist/index.js
@@ -97,9 +97,9 @@ Netlify 환경에서는 플러그인이 이 설정을 덮어쓰기 때문에 동
 
 ### 시도 2: enforce: 'post' 플러그인 (성공)
 
-**⚠️ v2.1.3 이후로는 이 workaround가 필요 없음**
+<strong>⚠️ v2.1.3 이후로는 이 workaround가 필요 없음</strong>
 
-`enforce: 'post'`를 사용해 Netlify 플러그인 **이후에** `server-build`를 input에 추가:
+`enforce: 'post'`를 사용해 Netlify 플러그인 <strong>이후에</strong> `server-build`를 input에 추가:
 
 ```typescript
 // vite.config.ts
@@ -142,7 +142,7 @@ export default defineConfig({
 });
 ```
 
-**결과:**
+<strong>결과:</strong>
 
 ```text
 build/server/server.js                         0.35 kB
@@ -156,11 +156,11 @@ Prerender (html): / -> build/client/index.html
 
 근본적인 해결을 위해 `@netlify/vite-plugin-react-router`에 PR 제출:
 
-- **Issue**: https://github.com/netlify/remix-compute/issues/606
+- <strong>Issue</strong>: https://github.com/netlify/remix-compute/issues/606
 
-- **PR**: https://github.com/netlify/remix-compute/pull/607
+- <strong>PR</strong>: https://github.com/netlify/remix-compute/pull/607
 
-플러그인이 기존 input을 덮어쓰지 않고 **병합**하도록 수정:
+플러그인이 기존 input을 덮어쓰지 않고 <strong>병합</strong>하도록 수정:
 
 ```typescript
 // Before (문제)
@@ -178,7 +178,7 @@ config.build.rollupOptions.input = {
 
 ```
 
-> 향후 React Router 팀에서 Vite Preview Server 방식으로 공식 지원 예정 ([RFC #14651](https://github.com/remix-run/react-router/discussions/14651))
+> 향후 React Router 팀에서 Vite Preview Server 방식으로 공식 지원 예정 ([RFC #14651](https://github.com/remix-run/react-router/discussions/14651))  
 
 ### 후속 진행
 
@@ -191,9 +191,9 @@ PR #607은 GitHub Actions 워크플로우 권한 문제로 인해 외부 기여�
 
 - PR 본문에 "Inspired by #606 (thank you @nahyeongjin1!)" 언급
 
-**2026년 1월 19일, PR #620이 머지되었다!** 🎉
+<strong>2026년 1월 19일, PR #620이 머지되었다!</strong> 🎉
 
-- **PR**: https://github.com/netlify/remix-compute/pull/620
+- <strong>PR</strong>: https://github.com/netlify/remix-compute/pull/620
 
 이제 workaround 없이 깔끔한 설정으로 prerender가 동작한다:
 
@@ -213,4 +213,4 @@ PR #607은 GitHub Actions 워크플로우 권한 문제로 인해 외부 기여�
 | [PR #14650](https://github.com/remix-run/react-router/pull/14650) | Preview Server 구현 (리뷰 대기) |
 | [Netlify #606](https://github.com/netlify/remix-compute/issues/606) | Netlify 플러그인 이슈 |
 | [Netlify #607](https://github.com/netlify/remix-compute/pull/607) | Netlify 플러그인 수정 PR |
-| [Netlify #620](https://github.com/netlify/remix-compute/pull/620) | Netlify 플러그인 수정 PR **(머지됨 ✅)** |
+| [Netlify #620](https://github.com/netlify/remix-compute/pull/620) | Netlify 플러그인 수정 PR <strong>(머지됨 ✅)</strong> |

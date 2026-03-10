@@ -14,7 +14,7 @@ thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2ce
 
 - Cloud Shell → GitHub Actions → 결국 Azure VM에서 크론잡
 
-- **7일 만에 크리스마스 선물로 성공! 🎄**
+- <strong>7일 만에 크리스마스 선물로 성공! 🎄</strong>
 </Callout>
 
 ---
@@ -33,7 +33,7 @@ AIew는 AI 기반 실시간 면접 연습 서비스인데, FER(Facial Expression
 
 ### OCI Free Tier를 알게 됨
 
-ARM 기반이긴 하지만, 이 스펙이 **영구 무료**라고?
+ARM 기반이긴 하지만, 이 스펙이 <strong>영구 무료</strong>라고?
 
 "이거다!" 싶어서 바로 가입했다.
 
@@ -188,7 +188,7 @@ jobs:
 처음 실행했는데 `NotAuthorizedOrNotFound` 에러가 났다.  
 디버깅해보니 Subnet에 접근을 못하고 있었다. 
 
-원인은 허무하게도 **오타**였다.
+원인은 허무하게도 <strong>오타</strong>였다.
 
 ```text
 ocid1.subnet.oc1.ap-huncheon-1.aaaa...
@@ -199,16 +199,16 @@ ocid1.subnet.oc1.ap-huncheon-1.aaaa...
 `ap-chuncheon-1`인데 `ap-huncheon-1`로 되어있었다.   
 처음 Cloud Shell에서 스크립트 짤 때 오타가 났던 것.
 
-**교훈: OCID는 반드시 콘솔에서 직접 복사하자.**
+<strong>교훈: OCID는 반드시 콘솔에서 직접 복사하자.</strong>
 
 ### 새로운 문제 발견
 
 오타 수정하고 나니 정상적으로 `Out of host capacity` 에러가 오기 시작했다. (이게 정상이다 🙃)  
 그런데 며칠 돌려보니 GitHub Actions cron의 한계가 보였다.
 
-- **cron 최소 간격이 5분**: 경쟁이 치열한 상황에서 불리
+- <strong>cron 최소 간격이 5분</strong>: 경쟁이 치열한 상황에서 불리
 
-- **실행 지연/누락 빈번**: 실제로는 7분~30분에 한 번 실행되기도 함
+- <strong>실행 지연/누락 빈번</strong>: 실제로는 7분~30분에 한 번 실행되기도 함
 
 - 사용량 많은 시간대에는 아예 스킵되는 경우도 있음
 
@@ -259,7 +259,7 @@ Thu Dec 25 05:04:40 UTC 2025: Attempting to create instance...
 Thu Dec 25 05:04:42 UTC 2025: SUCCESS!
 ```
 
-**12월 25일 오후 2시 4분 (KST)**, 크리스마스 당일에 Discord 알림이 울렸다.
+<strong>12월 25일 오후 2시 4분 (KST)</strong>, 크리스마스 당일에 Discord 알림이 울렸다.
 
 <Image src="https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/2cebdc82-a936-804e-8b53-f19167685081/2d4bdc82-a936-80c8-862c-dea30bb52938.png" />
 
@@ -277,7 +277,7 @@ Thu Dec 25 05:04:42 UTC 2025: SUCCESS!
 | --- | --- | --- |
 | Cloud Shell | 1분 | ❌ 세션 타임아웃 |
 | GitHub Actions | 5분+ (불안정) | ❌ 간격 너무 김 |
-| Azure VM 크론잡 | 2분 (안정) | ✅ **성공** |
+| Azure VM 크론잡 | 2분 (안정) | ✅ <strong>성공</strong> |
 
 ### 소요 시간
 
@@ -285,7 +285,7 @@ Thu Dec 25 05:04:42 UTC 2025: SUCCESS!
 
 - 성공: 12월 25일 (크리스마스!)
 
-- **총 약 7일 소요**
+- <strong>총 약 7일 소요</strong>
 
 ### 배운 점
 
@@ -297,7 +297,7 @@ Thu Dec 25 05:04:42 UTC 2025: SUCCESS!
 
 - OCI 마이그레이션하려고 Azure VM 크론잡 돌리는 아이러니
 
-- **결국은 타이밍과 운의 영역**
+- <strong>결국은 타이밍과 운의 영역</strong>
 
 ### OCI 인스턴스를 노린다면?
 
