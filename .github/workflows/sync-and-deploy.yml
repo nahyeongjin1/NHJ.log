@@ -28,7 +28,7 @@ jobs:
         run: npm ci
 
       - name: Sync Notion content
-        run: npm run sync-notion
+        run: npm run sync-notion:ci
         env:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           POSTS_DB_ID: ${{ secrets.POSTS_DB_ID }}
