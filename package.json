@@ -16,6 +16,7 @@
     "publish": "bash scripts/publish.sh",
     "deploy": "bash scripts/deploy.sh",
     "sync-notion": "tsx -r tsconfig-paths/register --env-file=.env scripts/sync-notion.ts",
+    "sync-notion:ci": "tsx -r tsconfig-paths/register scripts/sync-notion.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "netlify dev:exec drizzle-kit migrate",
     "db:studio": "netlify dev:exec drizzle-kit studio"
