@@ -1,0 +1,217 @@
+---
+title: 'PostgreSQL MVCC를 쉽게 이해해보자'
+excerpt: '면접에서 MVCC를 제대로 설명하지 못한 경험을 토대로 tuple 구조부터 snapshot, VACUUM까지 — PostgreSQL이 동시성을 다루는 방식을 따라가본다.'
+createdAt: '2026-04-04T09:12:00.000Z'
+updatedAt: '2026-04-05T05:28:00.000Z'
+tags: ['PostgreSQL', 'MVCC', 'Concurrency', 'VACUUM']
+thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/338bdc82-a936-80d3-9acd-f7e241a075a7/thumbnail.jpg'
+---
+
+## TL;DR
+
+<Callout icon="💡">
+면접에서 "MVCC 설명해주세요"에 답하지 못했다.
+
+PostgreSQL은 tuple versioning과 snapshot으로 읽기와 쓰기가 서로를  
+블로킹하지 않는 동시성을 구현한다.
+
+그 대가로 dead tuple이 쌓이며, VACUUM이 이를 정리한다.
+</Callout>
+
+---
+
+## 도입
+
+취준할 당시, 이력서에 적은 프로젝트들에 PostgreSQL이 여러 번 등장했다.   
+면접관은 자연스럽게 거기를 파고들었다.
+
+“PostgreSQL이 내부적으로 동시성을 어떻게 처리하는지 아시나요?”
+
+평소에도 합류하고 싶던 예비유니콘 스타트업이었다.   
+준비도 나름 했다고 생각했는데, 정작 MVCC라는 단어 이상을 설명하지 못했다.   
+사용해본 것과 이해하고 있는 것은 달랐다.
+
+이 글은 그때 답하지 못했던 질문에 대한 답이다.
+
+---
+
+## MVCC란
+
+동시에 여러 트랜잭션이 같은 데이터에 접근하면 어떻게 처리해야 할까?  
+가장 단순한 방법은 Lock이다.  
+누군가 쓰고 있으면 다른 사람은 기다린다.  
+안전하지만 느리다.
+
+MVCC(Multi-Version Concurrency Control)는 다른 접근을 택한다.  
+데이터를 수정할 때 기존 데이터를 덮어쓰지 않고, 새로운 버전을 만든다.  
+각 트랜잭션은 자신이 시작된 시점의 버전을 보기 때문에 읽기와 쓰기가 서로를 블로킹하지 않는다.
+
+|  | Lock 기반 | MVCC |
+| --- | --- | --- |
+| 읽기 + 쓰기 | 블로킹 | 비블로킹 |
+| 데이터 수정 | 덮어쓰기 | 새 버전 생성 |
+| 동시성 | 낮음 | 높음 |
+
+개념은 이렇다.   
+그렇다면 PostgreSQL은 이 "여러 버전"을 어떻게 관리할까?
+
+---
+
+## PostgreSQL의 MVCC
+
+### 상황 제시
+
+Alice와 Bob이 같은 row에 동시에 접근하는 상황을 생각해보자.
+
+```sql
+-- 초기 상태: (id=1, name='Alice')
+
+-- 1. Bob: 수정 시작 (아직 커밋 안 함)
+BEGIN;
+UPDATE users SET name = 'Bob' WHERE id = 1;
+
+-- 2. Alice: 조회 - Bob이 수정 중인데 블로킹 없이 읽힌다
+BEGIN;
+SELECT name FROM users WHERE id = 1;  -- 'Alice'
+
+-- 3. Bob: 커밋
+COMMIT;
+
+-- 4. Alice: 다시 조회 - 같은 트랜잭션인데 결과가 다르다
+SELECT name FROM users WHERE id = 1;  -- 'Bob'
+```
+
+Bob이 수정 중인데도 Alice는 블로킹 없이 읽을 수 있다.   
+그리고 Bob이 커밋한 후 Alice가 다시 조회하면 결과가 달라진다.   
+같은 트랜잭션 안에서.
+
+어떻게 이런 일이 가능할까?   
+답은 PostgreSQL이 row를 저장하는 방식에 있다.
+
+### Tuple 구조
+
+Bob이 `UPDATE`를 실행한 직후, PostgreSQL 내부에서는 이런 일이 일어났다.
+
+<Mermaid chart={`erDiagram
+    OLD_TUPLE {
+        int xmin "100"
+        int xmax "200"
+        string name "Alice"
+    }
+    NEW_TUPLE {
+        int xmin "200"
+        int xmax "-"
+        string name "Bob"
+    }
+    OLD_TUPLE ||--|| NEW_TUPLE : "version chain(t_ctid)"`} />
+
+PostgreSQL은 row를 tuple이라는 단위로 저장한다.   
+각 tuple에는 다음 필드가 붙어있다.
+
+- <strong>xmin</strong>: 이 tuple을 생성한 트랜잭션의 ID. old tuple은 트랜잭션 100이 INSERT했고, new tuple은 트랜잭션 200(Bob)이 생성했다.
+
+- <strong>xmax</strong>: 이 tuple을 삭제(또는 수정)한 트랜잭션의 ID. old tuple에는 Bob의 트랜잭션 ID 200이 찍혀있다. new tuple은 아직 아무도 수정하지 않았으므로 비어있다.
+
+PostgreSQL은 내부적으로 old tuple에서 new tuple으로의 포인터(`t_ctid`)를 유지하여 버전 체인을 형성한다.
+
+여기서 핵심은, old tuple이 물리적으로 사라지지 않았다는 점이다.   
+두 버전이 동시에 존재한다.   
+그렇다면 Alice의 `SELECT`는 두 tuple 중 어느 것을 보는 걸까?
+
+### Snapshot과 Visibility
+
+그 답은 snapshot에 있다.
+
+PostgreSQL은 READ COMMITTED 격리 수준(기본값)에서, 각 SQL statement가 실행될 때마다 snapshot을 생성한다.   
+snapshot에는 "현재 활성 중인 트랜잭션 목록"이 담겨있다.   
+이 snapshot을 기준으로 각 tuple의 xmin과 xmax를 대조하여, 해당 tuple이 보이는지 보이지 않는지를 판단한다.
+
+아까 시나리오를 snapshot 관점에서 다시 보자.
+
+<Mermaid chart={`sequenceDiagram
+    participant Bob
+    participant PostgreSQL
+    participant Alice
+
+    Bob->>PostgreSQL: BEGIN (txid=200)
+    Bob->>PostgreSQL: UPDATE name='Bob'
+    Note over PostgreSQL: old tuple: xmax=200 설정<br/>new tuple: xmin=200 생성
+
+    Alice->>PostgreSQL: SELECT name (snapshot 생성)
+    Note over Alice: snapshot: 활성 tx={200}<br/>→ txid 200은 미커밋<br/>→ old tuple 보임 → 'Alice'
+
+    Bob->>PostgreSQL: COMMIT
+
+    Alice->>PostgreSQL: SELECT name (새 snapshot 생성)
+    Note over Alice: snapshot: 활성 tx={}<br/>→ txid 200 커밋됨<br/>→ new tuple 보임 → 'Bob'`} />
+
+Alice의 첫 번째 `SELECT`가 실행될 때, PostgreSQL은 각 tuple의 가시성을 이렇게 판단한다:
+
+- <strong>old tuple</strong>: xmin=100(커밋됨, 유효한 tuple) / xmax=200(활성 중, 아직 삭제 안 됨으로 취급) → <strong>보인다</strong>
+
+- <strong>new tuple</strong>: xmin=200(활성 중, 아직 생성 안 됨으로 취급) → <strong>안 보인다</strong>
+
+그래서 Alice에게는 old tuple의 'Alice'가 보인다.
+
+Bob이 커밋한 후 Alice가 두 번째 `SELECT`를 실행하면, 새로운 snapshot이 생성된다.   
+이번에는 txid=200이 활성 목록에 없다.   
+이미 커밋됐기 때문이다.
+
+- <strong>old tuple</strong>: xmin=100(커밋됨) / xmax=200(커밋됨, 삭제된 것으로 취급) → <strong>안 보인다</strong>
+
+- <strong>new tuple</strong>: xmin=200(커밋됨, 유효한 tuple) → <strong>보인다</strong>
+
+그래서 new tuple의 'Bob'이 보인다.
+
+READ COMMITTED에서 같은 트랜잭션 안에서 결과가 달라지는 이유가 바로 이것이다.   
+statement마다 새로운 snapshot을 찍기 때문이다.   
+이 현상을 <strong>Non-repeatable Read</strong>라 한다.
+
+### UPDATE = Soft DELETE + INSERT
+
+지금까지 본 것을 종합해보자.
+
+PostgreSQL의 UPDATE는 기존 데이터를 덮어쓰지 않는다.   
+기존 tuple에 xmax를 찍어 "삭제 표시"만 하고, 새 tuple을 생성한다.   
+물리적으로 삭제하지 않는 soft delete다.   
+즉, UPDATE = soft DELETE + INSERT.
+
+이 방식 덕분에 MVCC가 가능하다.   
+옛날 버전이 물리적으로 남아있으니까 다른 트랜잭션이 여전히 볼 수 있는 것이다.
+
+그런데 이 옛날 tuple은 언제까지 남아있는 걸까?
+
+---
+
+## VACUUM
+
+아무도 보지 않는 tuple이 디스크에 계속 쌓인다.   
+테이블은 점점 커지고, 쿼리는 느려진다.   
+이를 <strong>table bloat </strong>이라고 부른다.
+
+PostgreSQL은 이 문제를 VACUUM으로 해결한다.   
+<strong>VACUUM</strong>은 더 이상 어떤 트랜잭션도 볼 필요 없는 dead tuple을 찾아서, 그 공간을 재사용 가능하도록 표시한다.   
+디스크에서 물리적으로 제거하는 것이 아니라, 새로운 데이터가 그 자리를 덮어쓸 수 있게 하는 것이다.
+
+이걸 매번 수동으로 하진 않는다.   
+<strong>autovacuum</strong>이 백그라운드에서 주기적으로 돌면서 알아서 처리한다.
+
+MVCC의 동시성은 공짜가 아니다.   
+여러 버전을 유지하는 대가로 dead tuple이 쌓이고, 이를 정리하는 VACUUM이 필요하다.   
+이것이 PostgreSQL MVCC의 trade-off다.
+
+---
+
+## 마무리
+
+다시 면접장으로 돌아가보자.
+
+"PostgreSQL이 내부적으로 동시성을 어떻게 처리하는지 아시나요?"
+
+이제는 이렇게 답할 것 같다.
+
+> PostgreSQL은 MVCC로 동시성을 제어합니다.   
+> UPDATE가 발생하면 기존 tuple을 덮어쓰지 않고 xmax를 설정한 뒤 새 tuple을 생성합니다.   
+> 각 statement는 실행 시점에 snapshot을 찍어서, 그 snapshot 기준으로 커밋된 tuple만 읽습니다.   
+> 덕분에 읽기와 쓰기가 서로 블로킹하지 않습니다.   
+> 대신 더 이상 참조되지 않는 dead tuple이 쌓이기 때문에 VACUUM이 이를 주기적으로 정리합니다.  
