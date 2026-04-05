@@ -132,6 +132,12 @@
   }
 }
 
+/* Prose inline code - backtick 장식 제거 */
+.prose code::before,
+.prose code::after {
+  content: none;
+}
+
 /* Prose (Typography) - CSS 변수 기반 색상 */
 /* @layer base 밖에 위치해야 Tailwind Typography 기본값을 덮어씀 */
 .prose {
