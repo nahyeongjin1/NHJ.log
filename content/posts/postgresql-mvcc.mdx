@@ -2,7 +2,7 @@
 title: 'PostgreSQL MVCC를 쉽게 이해해보자'
 excerpt: '면접에서 MVCC를 제대로 설명하지 못한 경험을 토대로 tuple 구조부터 snapshot, VACUUM까지 — PostgreSQL이 동시성을 다루는 방식을 따라가본다.'
 createdAt: '2026-04-04T09:12:00.000Z'
-updatedAt: '2026-04-05T05:28:00.000Z'
+updatedAt: '2026-04-05T05:33:00.000Z'
 tags: ['PostgreSQL', 'MVCC', 'Concurrency', 'VACUUM']
 thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/338bdc82-a936-80d3-9acd-f7e241a075a7/thumbnail.jpg'
 ---
@@ -12,8 +12,7 @@ thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/338
 <Callout icon="💡">
 면접에서 "MVCC 설명해주세요"에 답하지 못했다.
 
-PostgreSQL은 tuple versioning과 snapshot으로 읽기와 쓰기가 서로를  
-블로킹하지 않는 동시성을 구현한다.
+PostgreSQL은 tuple versioning과 snapshot으로 읽기와 쓰기가 서로를 블로킹하지 않는 동시성을 구현한다.
 
 그 대가로 dead tuple이 쌓이며, VACUUM이 이를 정리한다.
 </Callout>
