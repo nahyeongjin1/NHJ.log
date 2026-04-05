@@ -1,5 +1,22 @@
 [
   {
+    "id": "338bdc82-a936-80d3-9acd-f7e241a075a7",
+    "title": "PostgreSQL MVCC를 쉽게 이해해보자",
+    "slug": "postgresql-mvcc",
+    "excerpt": "면접에서 MVCC를 제대로 설명하지 못한 경험을 토대로 tuple 구조부터 snapshot, VACUUM까지 — PostgreSQL이 동시성을 다루는 방식을 따라가본다.",
+    "tags": [
+      "PostgreSQL",
+      "MVCC",
+      "Concurrency",
+      "VACUUM"
+    ],
+    "thumbnail": "https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/338bdc82-a936-80d3-9acd-f7e241a075a7/thumbnail.jpg",
+    "published": true,
+    "createdAt": "2026-04-04T09:12:00.000Z",
+    "updatedAt": "2026-04-05T05:28:00.000Z",
+    "readingTime": 6
+  },
+  {
     "id": "31dbdc82-a936-8035-8705-fca7d3db070b",
     "title": "무신사 AI Native Engineer 3차 면접 회고: 단일 Record 경합과 Hot Spot 문제",
     "slug": "musinsa-rookie-3",
