@@ -75,7 +75,7 @@ export const siteConfig = {
           title: 'AI Native Engineer',
           organization: '무신사',
           period: '2026.03 - 진행 중',
-          description: 'Order Fulfillment 도메인의 주문 흐름 orchestration',
+          description: 'Order Fulfillment 도메인의 주문 흐름',
         },
         {
           title: 'GDGoC Member',
