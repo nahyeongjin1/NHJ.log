@@ -63,26 +63,25 @@ export const siteConfig = {
     about: {
       title: 'About',
       description: '소개, 활동, 기술 스택 등을 확인할 수 있습니다.',
-      headline: '문제 앞에서 분야를 가리지 않는 백엔드 개발자입니다.',
+      headline: '변화하는 환경에 빠르게 적응하는 Product Engineer입니다.',
       location: 'Seoul, South Korea',
       intro: [
-        'TypeScript와 Python을 주력으로 백엔드 개발을 하고 있습니다.',
-        '하지만 문제 해결이 필요하다면 프론트엔드든 인프라든 가리지 않고 뛰어듭니다.',
+        'TypeScript와 Kotlin을 주력으로 Product Engineering을 하고 있습니다.',
         '특정 언어나 프레임워크에 종속되기보다, 상황에 맞는 도구를 선택하고 깊이 파고들어 해결책을 찾는 과정을 즐깁니다.',
         '이 블로그에는 개발하면서 마주친 문제들과 그 해결 과정을 기록하고 있습니다.',
       ],
       activities: [
         {
+          title: 'AI Native Engineer',
+          organization: '무신사',
+          period: '2026.03 - 진행 중',
+          description: 'Order Fulfillment 도메인의 주문 흐름 orchestration',
+        },
+        {
           title: 'GDGoC Member',
           organization: 'Google Developer Groups on Campus',
           period: '2025 - 2026',
           description: 'GDGoC Konkuk 25-26 멤버로 활동',
-        },
-        {
-          title: '공과대학 학생회',
-          organization: '건국대학교',
-          period: '2021',
-          description: '공과대학 학생회 활동',
         },
         {
           title: '오픈소스 기여',
@@ -98,12 +97,13 @@ export const siteConfig = {
         period: '2020.03 - 2026.08',
       },
       skills: {
-        Languages: ['TypeScript', 'JavaScript', 'Python', 'C++'],
-        Backend: ['Node.js', 'Fastify', 'Express', 'FastAPI'],
+        Languages: ['TypeScript', 'Kotlin', 'JavaScript', 'Python', 'C++'],
+        Backend: ['Node.js', 'NestJS', 'Fastify', 'Spring', 'FastAPI'],
         Frontend: ['React', 'React Router v7', 'Next.js', 'Tailwind CSS'],
-        Database: ['PostgreSQL', 'MongoDB', 'Redis'],
+        Database: ['PostgreSQL', 'MySQL', 'MongoDB', 'Redis'],
+        'Messaging / Workflow': ['Kafka', 'Temporal'],
         'Infra / DevOps': ['Docker', 'AWS', 'GitHub Actions', 'K3S'],
-        Tools: ['Git', 'Notion', 'Jira'],
+        Tools: ['Git', 'Notion', 'Jira', 'Slack', 'Confluence'],
       },
       interests: [
         {
