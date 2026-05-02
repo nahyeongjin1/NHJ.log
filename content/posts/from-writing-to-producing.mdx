@@ -2,7 +2,7 @@
 title: '코드를 작성하는 시대에서 생산하는 시대로'
 excerpt: '코드 생산의 주체가 바뀌어가는 시대에, 엔지니어로 남는다는 것.'
 createdAt: '2026-05-02T07:12:00.000Z'
-updatedAt: '2026-05-02T10:28:00.000Z'
+updatedAt: '2026-05-02T11:11:00.000Z'
 tags: ['AI Code Assistant', 'Software Engineering', 'System Design', 'Tension', 'Trade Off']
 thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/354bdc82-a936-807d-9f71-d3fb5cd676c7/thumbnail.png'
 ---
@@ -148,7 +148,9 @@ DB의 진실과 Cache의 응답 사이에는 시간차가 존재하고, 그 사�
 
 ### 두 번째 깨뜨림 — 영향을 덜 중요한 곳으로
 
-새로 등장한 stale tension을 어떻게 다룰 것인가? 한 가지 답은 완전히 없애려 하지 않는 것이다. 모든 읽기를 Cache로 보내는 대신, 사용자 여정의 어느 지점에서 stale을 견딜지, 어느 지점에서 우회시킬지를 의식적으로 설계한다.
+새로 등장한 stale tension을 어떻게 다룰 것인가?   
+한 가지 답은 완전히 없애려 하지 않는 것이다.   
+모든 읽기를 Cache로 보내는 대신, 사용자 여정의 어느 지점에서 stale을 견딜지, 어느 지점에서 우회시킬지를 의식적으로 설계한다.
 
 좌석 예매 시스템에서 발생하는 모든 요청이 정합성을 동등한 강도로 요구하지는 않는다.   
 결제 직전의 최종 좌석 확정 요청과, 사용자가 좌석 배치도를 둘러보면서 보내는 잔여 좌석 조회 요청은 무게가 다르다.   
