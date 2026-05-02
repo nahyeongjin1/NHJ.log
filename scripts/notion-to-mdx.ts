@@ -157,7 +157,7 @@ function convertRichTextItem(item: RichTextItemResponse): string {
   } else if (annotations.bold) {
     text = `<strong>${text}</strong>`;
   } else if (annotations.italic) {
-    text = `*${text}*`;
+    text = `<em>${text}</em>`;
   }
 
   // Strikethrough
