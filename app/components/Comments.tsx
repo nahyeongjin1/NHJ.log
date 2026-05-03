@@ -84,9 +84,24 @@ function CommentsClient({ postSlug }: CommentsProps) {
   }, [normalizedSlug]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 별도 PR에서 async IIFE + cancel flag 패턴으로 리팩토링 예정
-    fetchComments();
-  }, [fetchComments]);
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/comments?postSlug=${normalizedSlug}`);
+        const data = await res.json();
+        if (!cancelled) setComments(data.comments || []);
+      } catch (error) {
+        console.error('Failed to fetch comments:', error);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [normalizedSlug]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
