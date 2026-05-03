@@ -84,6 +84,7 @@ function CommentsClient({ postSlug }: CommentsProps) {
   }, [normalizedSlug]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 별도 PR에서 async IIFE + cancel flag 패턴으로 리팩토링 예정
     fetchComments();
   }, [fetchComments]);
 
