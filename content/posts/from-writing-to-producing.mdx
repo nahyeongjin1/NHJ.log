@@ -2,7 +2,7 @@
 title: '코드를 작성하는 시대에서 생산하는 시대로'
 excerpt: '코드 생산의 주체가 바뀌어가는 시대에, 엔지니어로 남는다는 것.'
 createdAt: '2026-05-02T07:12:00.000Z'
-updatedAt: '2026-05-03T05:20:00.000Z'
+updatedAt: '2026-05-03T05:48:00.000Z'
 tags: ['AI Code Assistant', 'Software Engineering', 'System Design', 'Tension', 'Trade Off']
 thumbnail: 'https://pub-ee38f5a9ca244fbb9948d2fb7fe576bd.r2.dev/images/posts/354bdc82-a936-807d-9f71-d3fb5cd676c7/thumbnail.png'
 ---
@@ -236,8 +236,9 @@ tension의 Minus는 여전히 존재하지만, 그 Minus가 사용자 경험에�
 No Silver Bullet은 어디에서나 작동한다.   
 비관적 락의 처리량 문제를 깨자 stale이 등장했고, stale을 덜 중요한 곳으로 밀자 비동기 처리의 복잡성이 등장했다.
 
-그러나 이 사례를 끝까지 따라온 사람은 또 한 가지를 보았을 것이다.   
-매 단계에서 한 가지 사고가 작동했다.
+이 사례를 끝까지 따라온 사람은 또 한 가지를 보았을 것이다.   
+매 단계마다 사고의 모양은 달랐다.  
+그러나 그 모두를 관통하는 자세는 하나였다.
 
 - Cache로 옮긴 순간 — 정합성과 응답 속도라는 두 요구를 <em>분리</em>했다.
 
@@ -247,7 +248,7 @@ No Silver Bullet은 어디에서나 작동한다.
 
 이름을 굳이 붙이자면 <strong>Decouple</strong>, <strong>Shift</strong>, <strong>Mitigate</strong>, <strong>Reframe</strong>이라고 부를 수 있다.   
 그러나 이름이 본질은 아니다.   
-본질은 — <strong><em>tension을 단순한 trade-off의 나열로 받아들이고 멈추지 않는다</em></strong><strong>는 자세 그 자체다.</strong>
+본질은 — <strong><em>tension을 식별하고, 의식적으로 다루어, 끝내 깨보려는 그 자세다.</em></strong>
 
 ---
 
