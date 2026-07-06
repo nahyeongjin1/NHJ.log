@@ -19,7 +19,8 @@
     "sync-notion:ci": "tsx -r tsconfig-paths/register scripts/sync-notion.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "netlify dev:exec drizzle-kit migrate",
-    "db:studio": "netlify dev:exec drizzle-kit studio"
+    "db:studio": "netlify dev:exec drizzle-kit studio",
+    "generate-og": "tsx scripts/generate-og.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1024.0",
@@ -49,6 +50,7 @@
     "@netlify/vite-plugin": "^2.11.2",
     "@netlify/vite-plugin-react-router": "^2.1.3",
     "@react-router/dev": "^7.12.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@types/node": "^20.17.32",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.6",
