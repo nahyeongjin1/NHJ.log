@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 import type { Route } from './+types/posts.$slug';
 import { PageLayout } from '~/components/PageLayout';
 import { siteConfig } from '~/config/site';
-import { generateMeta } from '~/lib/seo';
+import { generateMeta, articleJsonLd, breadcrumbJsonLd } from '~/lib/seo';
 import { Callout } from '~/components/mdx/Callout';
 import { Toggle } from '~/components/mdx/Toggle';
 import { Image } from '~/components/mdx/Image';
@@ -45,16 +45,33 @@ export function meta({ loaderData, location }: Route.MetaArgs) {
 
   // pathname에서 slug 추출: /posts/my-slug -> my-slug
   const slug = location.pathname.split('/posts/')[1];
+  const postUrl = `${siteConfig.url}/posts/${slug}`;
 
   return generateMeta({
     title: attributes.title,
     description: attributes.excerpt,
-    url: `${siteConfig.url}/posts/${slug}`,
+    url: postUrl,
     type: 'article',
     image: attributes.thumbnail,
     publishedTime: attributes.createdAt,
     modifiedTime: attributes.updatedAt,
     tags: attributes.tags,
+    jsonLd: [
+      articleJsonLd({
+        title: attributes.title,
+        description: attributes.excerpt,
+        url: postUrl,
+        image: attributes.thumbnail,
+        publishedTime: attributes.createdAt,
+        modifiedTime: attributes.updatedAt,
+        tags: attributes.tags,
+      }),
+      breadcrumbJsonLd([
+        { name: 'Home', url: siteConfig.url },
+        { name: 'Posts', url: `${siteConfig.url}/posts` },
+        { name: attributes.title, url: postUrl },
+      ]),
+    ],
   });
 }
 
