@@ -8,13 +8,14 @@ import { PostCard } from '~/components/PostCard';
 import { ProjectCard } from '~/components/ProjectCard';
 import { getPosts, getProjects } from '~/lib/content.server';
 import { siteConfig } from '~/config/site';
-import { generateMeta } from '~/lib/seo';
+import { generateMeta, websiteJsonLd } from '~/lib/seo';
 
 export function meta(_args: Route.MetaArgs) {
   return generateMeta({
     title: siteConfig.name,
     description: siteConfig.description,
     url: siteConfig.url,
+    jsonLd: websiteJsonLd(),
   });
 }
 
